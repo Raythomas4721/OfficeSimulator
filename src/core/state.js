@@ -20,7 +20,8 @@ export function createState(name) {
     health: { collapses: 0, sickDays: 0 }, // 當年度的病倒次數與病假天數，每年 1/1 歸零
     events: { last: {}, counts: {} }, // 每個事件上次出現的日子與次數
     stats: { workDays: 0, overtimeSlots: 0, collapses: 0, hospitalStays: 0 },
-    flags: { tutorialDone: false, reviews: 0, milestones: {} },
+    flags: { tutorialDone: false, reviews: 0, milestones: {}, chapters: {} }, // chapters：每章開場卡出現的日子
+    tidbits: { seen: {}, lastDay: 0 }, // 生活小事說過哪些、上一句是哪天（§5.5）
     period: null,
     pending: null, // 等玩家回應的卡片；有值時時間暫停
     queue: [], // 排隊中的卡片

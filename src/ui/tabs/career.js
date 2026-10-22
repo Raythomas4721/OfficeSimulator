@@ -3,6 +3,8 @@ import { CAST } from '../../data/cast.js';
 import { COURSES, COURSES_BY_ID } from '../../data/courses.js';
 import { SKILL_LABELS, SKILL_LIST } from '../../data/skills.js';
 import { EXERCISE } from '../../data/balance.js';
+import { CHAPTER_NUMBERS } from '../../data/chapters.js';
+import { chapterOf } from '../../systems/chapters.js';
 import { monthsBetween } from '../../core/calendar.js';
 import { gradeFor } from '../../systems/work.js';
 import { enrollBlocker, requiredAttendance } from '../../systems/study.js';
@@ -14,6 +16,7 @@ export function render() {
     <section class="card">
       <h2>目前職位</h2>
       <dl class="kv">
+        <dt>人生</dt><dd data-bind="chapter"></dd>
         <dt>職位</dt><dd data-bind="jobTitle"></dd>
         <dt>月薪</dt><dd data-bind="salary"></dd>
         <dt>本職年資</dt><dd data-bind="tenure"></dd>
@@ -58,6 +61,10 @@ export function render() {
 }
 
 export const binds = {
+  chapter: ({ state }) => {
+    const c = chapterOf(state);
+    return `第${CHAPTER_NUMBERS[c.n - 1]}章：${c.title}`;
+  },
   jobTitle: ({ state }) => jobTitle(state),
   salary: ({ state }) => formatMoney(state.job.salary),
   tenure: ({ state }) => tenure(state),

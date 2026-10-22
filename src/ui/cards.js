@@ -33,13 +33,16 @@ const castTag = e => {
   return c ? `<p class="cast-tag">${c.emoji} ${c.name}<small>${c.role}</small></p>` : '';
 };
 
+// 日常事件的文字可以是好幾個版本，依第幾次出現輪流用
+const eventText = (e, p) => (Array.isArray(e.text) ? e.text[(p.v ?? 0) % e.text.length] : e.text);
+
 function eventCard(p, state) {
   const e = EVENTS_BY_ID[p.id];
   if (p.step === 'choose') {
     return `
       ${castTag(e)}
       <h2 id="card-title">${esc(e.title)}</h2>
-      <p class="speech">${esc(e.text)}</p>
+      <p class="speech">${esc(eventText(e, p))}</p>
       <div class="card-choices">
         ${e.choices.map((c, i) => `<button class="btn btn-block choice-btn" data-action="eventChoose" data-index="${i}">${esc(c.text)}${c.hint ? `<small>${esc(c.hint(state))}</small>` : ''}</button>`).join('')}
       </div>`;

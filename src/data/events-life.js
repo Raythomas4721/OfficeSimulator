@@ -35,6 +35,7 @@ export const LIFE_EVENTS = [
   },
   {
     id: 'new_intern',
+    age: [26, 66],
     title: '新來的實習生',
     text: '部門來了一個實習生，主管說：「你帶他一下。」',
     condition: weekday,
@@ -100,6 +101,7 @@ export const LIFE_EVENTS = [
   },
   {
     id: 'peer_promoted',
+    age: [24, 40],
     cast: 'xiaomei',
     title: '同期升遷了',
     text: '公告出來了，跟你同一年進公司的同事升官了。',

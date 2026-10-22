@@ -1,5 +1,8 @@
 // 系統通知卡片的文字（考核、年終、病倒、住院、出院、課程結業）。d 是發出通知時記下的資料
 import { COURSES_BY_ID } from './courses.js';
+import { CHAPTERS, CHAPTER_NUMBERS } from './chapters.js';
+
+const chapterOf = d => CHAPTERS.find(c => c.n === d.n);
 import { SKILL_LABELS } from './skills.js';
 
 // 被約談後的績效改善計畫，在下一次考核揭曉（§7.3）
@@ -45,6 +48,10 @@ export const NOTICES = {
       `出席 ${d.attended} / ${d.required} 次（${Math.round((d.attended / d.required) * 100)}%）。`,
       d.passed ? `結業！${gainText(COURSES_BY_ID[d.id].gain)}。` : '出席率不到 70%，這次沒有結業，學費也不會退。',
     ],
+  },
+  chapter: {
+    title: d => `第${CHAPTER_NUMBERS[d.n - 1]}章：${chapterOf(d).title}`,
+    lines: d => [chapterOf(d).text],
   },
   discharge: {
     title: () => '出院了',

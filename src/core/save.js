@@ -1,6 +1,6 @@
 // 存讀檔（DESIGN.md §14.4）。格式變動時把 SAVE_VERSION 加 1，並在 MIGRATIONS 補上舊版升級函式
 const KEY = 'lifesim.save';
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 // 遷移函式要自給自足，不引用現在的遊戲程式，舊存檔才不會因為程式改動而升級失敗
 const MIGRATIONS = {
@@ -99,6 +99,17 @@ const MIGRATIONS = {
         pending: kept[0] ?? null,
         queue: kept.slice(1),
       },
+    };
+  },
+  // v8：人生章節與生活小事（v0.3 M9）。已經過了的章節不補開場卡
+  7: save => {
+    const s = save.state;
+    const age = 22 + Math.floor(s.day / 365.25);
+    const chapters = Object.fromEntries([[2, 25], [3, 30], [4, 40], [5, 50]].filter(([, a]) => age >= a).map(([n]) => [n, s.day]));
+    return {
+      ...save,
+      version: 8,
+      state: { ...s, flags: { ...s.flags, chapters }, tidbits: { seen: {}, lastDay: s.day } },
     };
   },
 };

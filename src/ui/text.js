@@ -6,10 +6,13 @@ import { SCHEDULE_PRESETS, SLOT_ACTIVITIES, SLOT_SHORT } from '../data/schedule.
 import { EVENTS_BY_ID } from '../data/events.js';
 import { COURSES_BY_ID } from '../data/courses.js';
 import { SKILL_LABELS } from '../data/skills.js';
+import { CHAPTERS, CHAPTER_NUMBERS } from '../data/chapters.js';
+import { TIDBITS_BY_ID } from '../data/tidbits.js';
 import { formatDate, formatMoney, formatMonths, formatSigned } from './format.js';
 
 export const activityOf = id => SLOT_ACTIVITIES.find(a => a.id === id);
 export const milestoneText = id => MILESTONES.find(m => m.id === id).text;
+export const tidbitText = id => TIDBITS_BY_ID[id]?.text ?? '';
 
 // 一鍵行程的按鈕；有報名課程時多一個「上課」
 export function schedulePresets(state) {
@@ -43,6 +46,8 @@ const LOG_TEXT = {
   courseDrop: e => `退掉了${courseTitle(e)}。`,
   pip: e => ({ passed: '績效改善計畫通過了。', demoted: '😣 績效改善計畫沒過，被降級減薪。', cut: '😣 績效改善計畫沒過，被減薪。' })[e.result],
   debtCleared: () => '💰 終於還清負債了！',
+  chapter: e => `📖 人生進入第${CHAPTER_NUMBERS[e.n - 1]}章：${CHAPTERS.find(c => c.n === e.n).title}`,
+  tidbit: e => `💬 ${tidbitText(e.id)}`,
 };
 
 const STAT_LABELS = { money: '存款', energy: '體力', mood: '心情', performance: '工作表現', energyMax: '體力上限', ...SKILL_LABELS };

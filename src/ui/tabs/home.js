@@ -1,6 +1,6 @@
 // 「今天」分頁：主畫面就是操作的地方（DESIGN.md §13）
 // 一天只有 0.4 秒，所以不做「今晚要做什麼」，直接調整每週行程
-import { DAILY, EXERCISE, SKILLS, THRESHOLDS } from '../../data/balance.js';
+import { DAILY, EXERCISE, SKILLS, THRESHOLDS, TIDBITS } from '../../data/balance.js';
 import { SLOT_ACTIVITIES, SLOT_SHORT } from '../../data/schedule.js';
 import { COURSES_BY_ID } from '../../data/courses.js';
 import { THOUGHTS } from '../../data/thoughts.js';
@@ -11,7 +11,7 @@ import { presetSchedule, sleepEffects, slotEffects, studySlots, weeklyForecast }
 import { requiredAttendance } from '../../systems/study.js';
 import { leaveOn } from '../../systems/statuses.js';
 import { esc, formatDate, formatNumber, formatSigned } from '../format.js';
-import { activityOf, logText, milestoneText, schedulePresets } from '../text.js';
+import { activityOf, logText, milestoneText, schedulePresets, tidbitText } from '../text.js';
 import { spriteImg } from '../sprite.js';
 
 const MILESTONE_SHOW_DAYS = 14; // 里程碑台詞顯示幾天（約 5 秒）
@@ -216,7 +216,7 @@ function statusIcon(state) {
   return '';
 }
 
-// 剛達成的里程碑優先；警訊台詞其次；其他符合的台詞每隔幾天輪一句
+// 剛達成的里程碑優先；警訊台詞其次；剛發生的生活小事再其次；其他符合的台詞每隔幾天輪一句
 function thoughtOf(state, scene) {
   const latest = state.log.find(e => e.kind === 'milestone');
   if (poke === 0 && latest && state.day - latest.day <= MILESTONE_SHOW_DAYS) {
@@ -224,6 +224,8 @@ function thoughtOf(state, scene) {
   }
   const matched = THOUGHTS.filter(t => t.when(state, scene));
   const urgent = matched.find(t => t.urgent);
+  const tidbit = state.log.find(e => e.kind === 'tidbit');
+  if (poke === 0 && !urgent && tidbit && state.day - tidbit.day <= TIDBITS.showDays) return { text: tidbitText(tidbit.id) };
   const linesOf = t => (typeof t.lines === 'function' ? t.lines(scene) : t.lines);
   const lines = urgent ? linesOf(urgent) : matched.flatMap(linesOf);
   return { text: lines.length ? lines[(Math.floor(state.day / THOUGHT_DAYS) + poke) % lines.length] : '…' };

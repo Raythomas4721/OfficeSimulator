@@ -124,6 +124,7 @@ export const FIRST_YEAR_EVENTS = [
   // ── 每年固定的日子 ──
   {
     id: 'lunar_new_year',
+    age: [22, 30], // 被問薪水的版本；其他年紀的版本在 M10
     on: { month: 2, date: 10 },
     cast: 'mom',
     title: '過年',
@@ -223,6 +224,7 @@ export const FIRST_YEAR_EVENTS = [
   },
   {
     id: 'year_end_party',
+    age: [22, 30], // 新人上台表演的版本
     on: { month: 1, date: 15 },
     cast: 'boss',
     title: '尾牙',
@@ -254,9 +256,14 @@ export const FIRST_YEAR_EVENTS = [
   },
   {
     id: 'printer_jam',
+    repeat: true, // 日常
     cast: 'boss',
     title: '印表機又卡紙',
-    text: '王經理十分鐘後要開會，印表機偏偏在這時候卡紙。',
+    text: [
+      '王經理十分鐘後要開會，印表機偏偏在這時候卡紙。',
+      '印表機顯示「缺紙」，打開來明明是滿的。它只是不想上班，跟你一樣。',
+      '新的印表機到了，第一天就卡紙。有些東西換了也沒用。',
+    ],
     condition: (s, c) => !c.weekend,
     choices: [
       {
@@ -274,9 +281,15 @@ export const FIRST_YEAR_EVENTS = [
   },
   {
     id: 'elder_meme',
+    repeat: true, // 日常：長輩圖永遠不會停
     cast: 'mom',
     title: '早安長輩圖',
-    text: '媽媽傳來今天的長輩圖：「早安，平安喜樂」，背景是一朵發光的蓮花。',
+    text: [
+      '媽媽傳來今天的長輩圖：「早安，平安喜樂」，背景是一朵發光的蓮花。',
+      '媽媽傳來一張長輩圖：「認同請分享」，下面還附了一則來路不明的養生新知。',
+      '家族群組一早就有三張不同的「早安」，其中一張還會閃。',
+      '媽媽轉傳了一段影片：「這個一定要看完！」影片長 17 分鐘。',
+    ],
     choices: [
       { text: '回一張更閃的', effects: { mood: 3 }, result: '媽媽回了三個讚。' },
       { text: '已讀', result: '媽媽又傳了一張。', default: true },

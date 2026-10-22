@@ -17,10 +17,11 @@ const programmingChance = s => clamp(0.1 + s.skills.programming / 40);
 export const STUDY_EVENTS = [
   {
     id: 'tuition_subsidy',
+    repeat: true, // 每門課都可能遇到
     cast: 'hr',
     title: '學費可以申請補助',
     text: '人資小林：「聽說你在上課？公司有進修補助，可以補一半學費喔。」',
-    condition: s => studying(s) && s.day - s.study.course.startDay <= 60 && courseOf(s).cost >= 8_000,
+    condition: s => studying(s) && courseOf(s).cost >= 8_000,
     weight: STUDY_WEIGHT,
     cooldownDays: 365,
     choices: [
@@ -35,6 +36,8 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'boss_against_study',
+    repeat: true, // 每門課都可能遇到
+    cooldownDays: 180,
     cast: 'boss',
     title: '「最近怎麼都準時走？」',
     text: '王經理：「最近怎麼都準時下班？聽說你去上課？這週案子很趕喔。」',
@@ -62,6 +65,8 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'classmates_supper',
+    repeat: true, // 每門課都可能遇到
+    cooldownDays: 180,
     title: '同學揪宵夜',
     text: '下課後，班上同學揪：「一起去吃鹹酥雞？」',
     condition: studying,
@@ -78,6 +83,8 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'homework_night',
+    repeat: true, // 每門課都可能遇到
+    cooldownDays: 180,
     title: '明天要交作業',
     text: '突然想起來，課堂作業明天就要交了，還一個字都沒寫。',
     condition: studying,
@@ -93,6 +100,8 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'study_burnout',
+    repeat: true, // 每門課都可能遇到
+    cooldownDays: 180,
     title: '上班加上課，有點撐不住',
     text: '白天上班、晚上上課，最近累到在捷運上站著都能睡著。',
     condition: s => studying(s) && s.vitals.energy < 35,
@@ -161,6 +170,8 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'sports_injury',
+    repeat: true, // 健康後果
+    cooldownDays: 365,
     title: '運動時扭到了',
     text: '打球時落地沒站穩，腳踝腫了起來。',
     condition: s => slotsOf(s, 'exercise') > 0,
@@ -186,6 +197,7 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'stomach_ulcer',
+    repeat: true, // 健康後果，條件符合就可能再發生
     title: '胃好痛',
     text: '心情一直很差，最近常常胃痛，今天早上痛到冒冷汗。',
     condition: s => s.vitals.mood < 20,
@@ -212,6 +224,7 @@ export const STUDY_EVENTS = [
   },
   {
     id: 'palpitation',
+    repeat: true, // 健康後果，條件符合就可能再發生
     title: '心臟怦怦跳',
     text: '連續加班好幾週，今天開會時突然心悸、喘不過氣。',
     condition: s => slotsOf(s, 'overtime') >= 3 && s.vitals.energy < 30,

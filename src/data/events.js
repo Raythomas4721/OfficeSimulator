@@ -99,8 +99,15 @@ export const EVENT_LIST = [
   },
   {
     id: 'sick_day',
+    repeat: true, // 日常：感冒會一再發生
+    cooldownDays: 365,
     title: '好像感冒了',
-    text: '早上起床喉嚨痛、頭有點暈。',
+    text: [
+      '早上起床喉嚨痛、頭有點暈。',
+      '鼻塞到用嘴巴呼吸，衛生紙一包接一包。',
+      '辦公室有一半的人在咳嗽，今天輪到你了。',
+      '季節交替，身體比氣象預報更早知道天氣變了。',
+    ],
     weight: s => (s.vitals.energy < 40 ? 40 : 6), // 體力越低越容易感冒
     choices: [
       { text: '請病假休息', effects: { money: -500 }, sickLeave: 2, result: '看了醫生，在家休息兩天。', default: true },
@@ -155,9 +162,14 @@ export const EVENT_LIST = [
   },
   {
     id: 'drink_order',
+    repeat: true, // 日常
     cast: 'xiaomei',
     title: '揪團訂飲料',
-    text: '下午三點，小美在群組揪團訂飲料。',
+    text: [
+      '下午三點，小美在群組揪團訂飲料。',
+      '小美：「新開的那家手搖第二杯半價，誰要？」群組瞬間十個人+1。',
+      '下午茶時間到，小美在群組發了菜單，還附註「微糖去冰是基本禮貌」。',
+    ],
     condition: weekday,
     choices: [
       { text: '跟一杯', effects: { money: -60, mood: 3 }, result: '半糖少冰，續命成功。' },
@@ -188,6 +200,7 @@ export const EVENT_LIST = [
   },
   {
     id: 'wedding_invite',
+    age: [24, 40],
     cast: 'xiaomei',
     title: '收到喜帖',
     text: '小美要結婚了！桌上放著一張紅色喜帖。',
@@ -198,8 +211,13 @@ export const EVENT_LIST = [
   },
   {
     id: 'typhoon_day',
+    repeat: true, // 日常：每年都有颱風
     title: '颱風假！',
-    text: '颱風來了，今天停班停課！',
+    text: [
+      '颱風來了，今天停班停課！',
+      '颱風假宣布了！脆上已經有人在比誰的泡麵囤得比較多。',
+      '颱風假，但主管在群組說：「大家在家也可以看一下信喔。」',
+    ],
     condition: (s, c) => !c.weekend && c.month >= 7 && c.month <= 9,
     choices: [
       { text: '在家耍廢', effects: { mood: 12, energy: 10 }, result: '泡麵配追劇，完美的一天。', default: true },
@@ -208,8 +226,13 @@ export const EVENT_LIST = [
   },
   {
     id: 'mrt_delay',
+    repeat: true, // 日常
     title: '捷運延誤',
-    text: '捷運號誌故障，看起來會遲到。',
+    text: [
+      '捷運號誌故障，看起來會遲到。',
+      '車廂廣播：「列車將在此稍作停留。」你在心裡默默算了一下全勤獎金。',
+      '下雨天的捷運擠到你的雙腳離地，到站時已經用掉今天一半的體力。',
+    ],
     condition: weekday,
     choices: [
       { text: '用跑的', effects: { energy: -6 }, result: '氣喘吁吁，剛好趕上打卡。' },

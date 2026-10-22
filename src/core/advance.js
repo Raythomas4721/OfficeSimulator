@@ -10,6 +10,7 @@ import { annualReview } from '../systems/annual.js';
 import { rollEvent } from '../systems/events.js';
 import { checkMilestones } from '../systems/milestones.js';
 import { checkCourse } from '../systems/study.js';
+import { checkChapter, rollTidbit } from '../systems/chapters.js';
 
 export function advanceDay(state, rng) {
   const cal = calendarOf(state.day);
@@ -34,10 +35,12 @@ export function advanceDay(state, rng) {
   clampVitals(state);
   checkCollapse(state);
 
-  // 4. 固定日期：1/1 年度回顧與考核（同一張卡）、每月 1 日繳生活費；課程結業
+  // 4. 固定日期：1/1 年度回顧與考核（同一張卡）、每月 1 日繳生活費；課程結業、章節開場、生活小事
   if (cal.month === 1 && cal.date === 1) annualReview(state, rng);
   if (cal.date === 1) applyMonthStart(state);
   checkCourse(state);
+  checkChapter(state);
+  rollTidbit(state);
   checkMilestones(state);
 
   state.day += 1;

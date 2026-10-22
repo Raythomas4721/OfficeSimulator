@@ -7,7 +7,11 @@ import { calendarOf } from '../src/core/calendar.js';
 import { autoResolve } from '../src/systems/auto.js';
 import { enrollBlocker, enrollCourse } from '../src/systems/study.js';
 import { LADDER } from '../src/data/jobs.js';
-import { EVENT_LIST } from '../src/data/events.js';
+import { EVENT_LIST, EVENTS_BY_ID } from '../src/data/events.js';
+import { CHAPTERS, chapterOfAge } from '../src/data/chapters.js';
+import { TIDBITS } from '../src/data/tidbits.js';
+import { TIME } from '../src/data/balance.js';
+import { ageOn } from '../src/core/calendar.js';
 
 const YEARS = Number(process.argv[2] ?? 10);
 const SEED = Number(process.argv[3] ?? 12345);
@@ -41,21 +45,31 @@ function planStudy(state) {
   enrollCourse(state, enrollBlocker(state, 'pmp') ? 'leadership' : 'pmp');
 }
 
-function simulate(strategy) {
+// years：要模擬幾年；cards 記下每張事件卡出現的日子（一生的事件報告用）
+function simulate(strategy, years = YEARS) {
   const { promotion = 'accept' } = strategy;
   const state = createState('模擬');
   const rng = createRng(SEED);
+  const cards = [];
   // 檢討卡片選「照舊」，所以由策略每天重新排行程（上課期間才排進修）
-  const endYear = calendarOf(0).year + YEARS;
+  const endYear = calendarOf(0).year + years;
   while (calendarOf(state.day).year < endYear || calendarOf(state.day).month < 2) {
     if (strategy.study) planStudy(state);
     state.schedule = scheduleFor(state, strategy);
     advanceDay(state, rng);
-    while (state.pending) autoResolve(state, rng, { promotion });
+    while (state.pending) {
+      const p = state.pending;
+      if (p.kind === 'event' && p.step === 'choose' && !p.counted) {
+        p.counted = true;
+        cards.push({ id: p.id, day: state.day });
+      }
+      autoResolve(state, rng, { promotion });
+    }
   }
   const title = LADDER.find(l => l.level === state.job.level).title;
   return {
     state,
+    cards,
     row: {
       考核: state.job.reviews.map(r => r.grade).join(''),
       職位: title,
@@ -76,7 +90,18 @@ const results = STRATEGIES.map(s => ({ name: s.name, ...simulate(s) }));
 console.log(`模擬 ${YEARS} 年（到 ${calendarOf(0).year + YEARS} 年 1 月底），種子 ${SEED}；卡片照預設選項處理\n`);
 console.table(Object.fromEntries(results.map(r => [r.name, r.row])));
 
-// 事件出現次數，用來檢查有沒有事件太常或從來沒出現
-const sample = results[EVENT_SAMPLE];
-console.log(`\n事件出現次數（${sample.name}）：`);
-console.log(EVENT_LIST.map(e => `${e.title} ${sample.state.events.counts[e.id] ?? 0}`).join('、'));
+// 一生的事件報告（§10.2）：22～65 歲跑一輪，看事件卡張數、間隔、重複、各章節分布
+const life = simulate(STRATEGIES[EVENT_SAMPLE], 43);
+const counts = {};
+for (const c of life.cards) counts[c.id] = (counts[c.id] ?? 0) + 1;
+const repeated = Object.entries(counts).filter(([, n]) => n > 1);
+const wrong = repeated.filter(([id]) => !EVENTS_BY_ID[id].repeat && !EVENTS_BY_ID[id].followUp); // 後續事件是系統觸發的後果，可以重複
+const gaps = life.cards.slice(1).map((c, i) => ((c.day - life.cards[i].day) * TIME.msPerDay) / 1000).sort((a, b) => a - b);
+const q = p => Math.round(gaps[Math.floor(gaps.length * p)] ?? 0);
+const perChapter = CHAPTERS.map(ch => `第${ch.n}章 ${life.cards.filter(c => chapterOfAge(ageOn(c.day)).n === ch.n).length}`);
+console.log(`\n一生的事件（${STRATEGIES[EVENT_SAMPLE].name}，43 年）：共 ${life.cards.length} 張、${Object.keys(counts).length} 種；間隔中位數 ${q(0.5)} 秒、九成 ${q(0.9)} 秒內、最長 ${Math.round(gaps.at(-1) ?? 0)} 秒`);
+console.log(`各章節：${perChapter.join('、')}`);
+console.log(`重複出現：${repeated.map(([id, n]) => `${EVENTS_BY_ID[id].title} ×${n}`).join('、') || '沒有'}`);
+console.log(`不該重複卻重複：${wrong.map(([id]) => EVENTS_BY_ID[id].title).join('、') || '沒有'}`);
+console.log(`生活小事：說了 ${Object.keys(life.state.tidbits.seen).length} / ${TIDBITS.length} 句`);
+console.log(`從沒出現的事件：${EVENT_LIST.filter(e => !counts[e.id] && !e.followUp).map(e => e.title).join('、')}`);

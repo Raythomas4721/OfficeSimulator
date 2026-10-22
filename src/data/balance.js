@@ -94,13 +94,22 @@ export const BONUS = {
   months: { A: 2, B: 1.5, C: 1, D: 0.5 }, // 1/1 考核時一起發放（§7.4）
 };
 
+// 事件節奏（§10.2）：一生一次為主，約 40 秒一張；第一年的新人劇情比較密
 export const EVENTS = {
-  minGapDays: 38, // 兩個事件之間至少隔幾天（約 15 秒），讓事件間隔落在 15～30 秒（§10.2）
+  storyGapDays: 38, // 新人劇情之間至少隔幾天（約 15 秒）
+  minGapDays: 80, // 其他事件和上一個事件至少隔幾天（約 32 秒）
+  dailyChance: 1 / 20, // 空檔夠長時，隨機事件每天出現的機率；平均間隔約 100 天（40 秒）
   holidayWindowDays: 14, // 節日可以延後幾天出現；延後還排不進去就跳過那一年
-  holidayCooldownDays: 1000, // 同一個節日至少隔快三年才再出現（M7 從 700 調長，降低重複感）
-  dailyChance: 1 / 12, // 空檔夠長時，隨機事件每天出現的機率
-  cooldownDays: 180,
+  holidayCooldownDays: 1000, // 同一個節日（不同版本也算）至少隔快三年才再出現
+  repeatCooldownDays: 1000, // 日常事件（repeat: true）預設冷卻
   weight: 10,
+  ageWeight: 3, // 有年紀範圍的事件只有那幾年碰得到，權重加倍
+};
+
+// 生活小事（§5.5）：每一章的小事平均分散在這一章裡，兩句之間至少隔幾天
+export const TIDBITS = {
+  minGapDays: 15,
+  showDays: 10, // 主角說出來後，泡泡留幾天
 };
 
 export const HEALTH = {
