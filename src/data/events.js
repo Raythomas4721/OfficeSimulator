@@ -11,6 +11,7 @@ import { CHAPTER4_EVENTS } from './events-ch4.js';
 import { CHAPTER5_EVENTS } from './events-ch5.js';
 import { MEME_EVENTS } from './events-memes.js';
 import { CAST_EVENTS, CAST_PRESENT } from './events-cast.js';
+import { LOVE_EVENTS } from './events-love.js';
 // 事件在一天開始時（06:00）跳出，所以文字用「今天」「昨晚」的角度寫
 // c：今天的日曆 { month, date, weekday（0 = 週日）, weekend }
 // 欄位：on（劇情事件的日子，見 events-first-year.js）、cast（固定班底，見 cast.js）
@@ -325,6 +326,7 @@ EVENT_LIST.push(
   ...CHAPTER5_EVENTS,
   ...MEME_EVENTS,
   ...CAST_EVENTS,
+  ...LOVE_EVENTS,
 );
 
 // 班底離開公司後（例如阿凱去開店、王經理退休），有他出場的一般事件就不再出現；劇情、節日、故事線不受影響

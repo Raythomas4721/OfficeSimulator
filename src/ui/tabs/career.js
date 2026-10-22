@@ -1,5 +1,4 @@
 import { LADDER } from '../../data/jobs.js';
-import { CAST } from '../../data/cast.js';
 import { COURSES, COURSES_BY_ID } from '../../data/courses.js';
 import { SKILL_LABELS, SKILL_LIST } from '../../data/skills.js';
 import { EXERCISE } from '../../data/balance.js';
@@ -45,13 +44,6 @@ export function render() {
     <section class="card">
       <h2>考核紀錄</h2>
       <ul class="log" data-block="reviews"></ul>
-    </section>
-    <section class="card">
-      <h2>身邊的人</h2>
-      <ul class="cast-list">
-        ${CAST.map(c => `<li><span class="cast-emoji" aria-hidden="true">${c.emoji}</span><span><b>${c.name}</b><small>${c.role}</small><br>${c.desc}</span></li>`).join('')}
-      </ul>
-      <p class="muted">v0.4 起會有好感度，能交朋友、請他們內推。</p>
     </section>
     <section class="card">
       <h2>職位階梯</h2>

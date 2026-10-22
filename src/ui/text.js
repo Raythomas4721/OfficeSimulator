@@ -8,6 +8,7 @@ import { COURSES_BY_ID } from '../data/courses.js';
 import { SKILL_LABELS } from '../data/skills.js';
 import { CHAPTERS, CHAPTER_NUMBERS } from '../data/chapters.js';
 import { TIDBITS_BY_ID } from '../data/tidbits.js';
+import { PARTNERS_BY_ID, fillNames } from '../data/partners.js';
 import { formatDate, formatMoney, formatMonths, formatSigned } from './format.js';
 
 export const activityOf = id => SLOT_ACTIVITIES.find(a => a.id === id);
@@ -31,7 +32,7 @@ const LOG_TEXT = {
   livingCost: e => `繳了房租和生活費 ${formatMoney(e.amount)}。`,
   interest: e => `存款是負的，被收了利息 ${formatMoney(e.amount)}。`,
   milestone: e => `🎉 ${milestoneText(e.id)}`,
-  event: e => `${EVENTS_BY_ID[e.id].title}：${EVENTS_BY_ID[e.id].choices[e.choice].text}`,
+  event: e => fillNames(`${EVENTS_BY_ID[e.id].title}：${EVENTS_BY_ID[e.id].choices[e.choice].text}`, e.partner),
   review: e => `${e.year} 年度考核 ${e.grade}。`,
   promotion: e => `🎉 升遷為${e.title}！`,
   declinePromotion: e => `婉拒了升遷為${e.title}。`,
@@ -48,9 +49,13 @@ const LOG_TEXT = {
   debtCleared: () => '💰 終於還清負債了！',
   chapter: e => `📖 人生進入第${CHAPTER_NUMBERS[e.n - 1]}章：${CHAPTERS.find(c => c.n === e.n).title}`,
   tidbit: e => `💬 ${tidbitText(e.id)}`,
+  loveMeet: e => `💌 認識了${PARTNERS_BY_ID[e.id].name}。`,
+  loveDating: e => `💞 和${PARTNERS_BY_ID[e.id].name}開始交往了！`,
+  loveEnd: e => (e.stage === 'dating' ? `💔 和${PARTNERS_BY_ID[e.id].name}分手了。` : `和${PARTNERS_BY_ID[e.id].name}後來只是朋友。`),
+  loveFade: e => `和${e.name}後來就沒聯絡了。`,
 };
 
-const STAT_LABELS = { money: '存款', energy: '體力', mood: '心情', performance: '工作表現', energyMax: '體力上限', ...SKILL_LABELS };
+const STAT_LABELS = { money: '存款', energy: '體力', mood: '心情', performance: '工作表現', energyMax: '體力上限', affinity: '好感', ...SKILL_LABELS };
 
 // 數值變化的條列文字，例如「心情 −3」「存款 −NT$ 60」
 export function deltaItems(deltas = {}) {

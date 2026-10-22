@@ -27,7 +27,7 @@ export function runOffline(state, rng, awayMs) {
         reviews++;
         happened.push({ kind: 'notice', id: 'review', data: card.annual, deltas: { money: card.bonus } });
       }
-      else if (card.kind === 'event' && card.choice != null) happened.push({ kind: 'event', id: card.id, choice: card.choice, text: card.text });
+      else if (card.kind === 'event' && card.choice != null) happened.push({ kind: 'event', id: card.id, choice: card.choice, text: card.text, partner: card.partner });
       else if (card.kind === 'notice') happened.push({ kind: 'notice', id: card.id, data: card.data, deltas: card.deltas });
     }
     return true;

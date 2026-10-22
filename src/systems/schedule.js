@@ -1,4 +1,4 @@
-import { DAILY, EXERCISE } from '../data/balance.js';
+import { DAILY, EXERCISE, LOVE } from '../data/balance.js';
 import { STUDY_PRESETS, SCHEDULE_PRESETS } from '../data/schedule.js';
 import { COURSES_BY_ID } from '../data/courses.js';
 import { slotIndex } from '../core/calendar.js';
@@ -6,6 +6,7 @@ import { overtimePay } from './finance.js';
 import { forcedOn, leaveOn } from './statuses.js';
 import { workEffects } from './work.js';
 import { attendStudy } from './study.js';
+import { applyLoveSlot } from './love.js';
 
 // 優先順序：住院 > 病假 > 強制時段 > 行程範本（DESIGN.md §14.3）
 export function activityFor(state, weekday, day = state.day) {
@@ -26,6 +27,7 @@ export function applySlot(state, activity, weekend, multiplier) {
     state.money -= fx.cost;
     state.period.expenses += fx.cost;
   }
+  applyLoveSlot(state, activity, weekend);
   if (activity === 'overtime') {
     const pay = overtimePay(state, weekend);
     state.money += pay;
@@ -54,7 +56,7 @@ export function applyHealthDay(state) {
 export function slotEffects(activity, weekend) {
   const fx = DAILY[activity];
   const k = weekend ? DAILY.weekendMultiplier : 1;
-  const cost = activity === 'exercise' ? EXERCISE.cost : 0;
+  const cost = activity === 'exercise' ? EXERCISE.cost : activity === 'social' ? LOVE.socialCost : 0;
   return { energy: fx.energy * k, mood: fx.mood * k, performance: fx.performance * k, cost: cost * k };
 }
 

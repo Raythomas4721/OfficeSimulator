@@ -27,7 +27,36 @@ export const DAILY = {
   slack: { energy: 0, mood: 8, performance: 0 }, // 耍廢：只補心情
   study: { energy: -6, mood: -3, performance: 0 },
   exercise: { energy: -4, mood: 2, performance: 0 },
+  social: { energy: 0, mood: 6, performance: 0 }, // 社交：聚會、約會（v0.4 M11）；和耍廢一樣不補體力，心情少一點但花錢
   weekendMultiplier: 2, // 週末一整天：效果、花費、出席、體力上限都加倍
+};
+
+// 感情（DESIGN.md §9.4）：好感 0～100；「一週」的數值是平日一格，週末一整天 ×2
+export const LOVE = {
+  socialCost: 400, // 一格社交的花費（聚會、約會）
+  meetAffinity: 30, // 認識後的好感
+  meetWeightBase: 0.3, // 認識對象的事件權重 ×（這個值 + 這週社交格數 × 下一個值）：不社交就很難認識人
+  meetWeightPerSocial: 1,
+  dateGain: 1.5, // 每格約會
+  likeGain: 0.5, // 對方喜歡你排的活動，一週每格（看行程，最多算 likeCap 格）
+  dislikeLoss: 0.5, // 對方不喜歡的活動，一週每格
+  likeCap: 2, // 不然整週都排對方喜歡的休息，不約會也會一直升溫
+  dailyDecay: 0.2, // 一週約 −1.4；每週六約會一格（+3）一週淨約 +1.6
+  overtimeSlots: 3, // 這週加班到這麼多格，對方會覺得你比較愛工作
+  overtimeWeeklyLoss: 1,
+  datingMood: 0.3, // 交往中每天心情
+  confessAt: 50, // 曖昧時好感到這裡就出現告白事件
+  confessBonus: 0.1, // 告白成功率 = 好感 / 100 + 這個值
+  confessFail: 15,
+  askAgainDays: 60, // 「再觀察一下」或告白失敗後，多久會再出現
+  fadeBelow: 15, // 曖昧時好感低於這個就沒聯絡了
+  talkBelow: 25, // 交往時好感低於這個，出現「我們是不是該談談」
+  talkAgainDays: 90,
+  dumpBelow: 10, // 低於這個對方提分手
+  crushDays: 30, // 認識滿幾天出現那位角色的曖昧事件
+  personalDays: [60, 240, 500], // 交往滿幾天出現那位角色的個人事件
+  anniversaryDays: 365, // 交往一週年（一生一次）
+  cardGapDays: 30, // 感情的卡片和上一張事件卡至少隔幾天，免得連續跳卡
 };
 
 // 技能（DESIGN.md §6）：管理、外語、程式，每項 0～100

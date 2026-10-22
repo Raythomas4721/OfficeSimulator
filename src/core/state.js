@@ -4,7 +4,7 @@ import { startPeriod } from '../systems/review.js';
 
 const LOG_LIMIT = 30;
 
-export function createState(name) {
+export function createState(name, pref = 'any') {
   const state = {
     player: { name },
     day: 0,
@@ -16,6 +16,8 @@ export function createState(name) {
     study: { course: null, done: {} }, // 目前的課程與每門課結業的次數（§9.1）
     schedule: Array(7).fill('rest'),
     statuses: [], // 病假、住院、強制時段、延遲效果（DESIGN.md §14.3）
+    // 感情（§9.4）：pref 戀愛偏好、stage 單身／曖昧／交往、gone 這輪不會再遇到的人、nextAsk 告白或談談最早再出現的日子
+    love: { pref, partner: null, stage: 'single', affinity: 0, since: null, nextAsk: 0, gone: {} },
     crisis: { pip: false, debtMonths: 0, debtPlan: false }, // 績效改善計畫、連續負債幾個月、債務協商（§7.3、§11）
     health: { collapses: 0, sickDays: 0 }, // 當年度的病倒次數與病假天數，每年 1/1 歸零
     events: { last: {}, counts: {} }, // 每個事件上次出現的日子與次數

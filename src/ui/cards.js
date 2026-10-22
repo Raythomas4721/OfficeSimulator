@@ -1,6 +1,7 @@
 // 從下方滑出的卡片：檢討與月結、事件、通知、你不在的時候。state.pending 有值時顯示，時間暫停
 import { EVENTS_BY_ID } from '../data/events.js';
 import { CAST_BY_ID } from '../data/cast.js';
+import { PARTNERS_BY_ID, fillNames } from '../data/partners.js';
 import { NOTICES } from '../data/notices.js';
 import { esc, formatMoney } from './format.js';
 import { deltaItems, noteText } from './text.js';
@@ -27,33 +28,36 @@ export const blocks = {
   },
 };
 
-// 有固定班底的事件，標題上方顯示是誰
-const castTag = e => {
+// 有固定班底或戀愛對象的事件，標題上方顯示是誰；'partner' 是出卡當時的對象
+const castTag = (e, p) => {
   const c = CAST_BY_ID[e.cast];
-  return c ? `<p class="cast-tag">${c.emoji} ${c.name}<small>${c.role}</small></p>` : '';
+  if (c) return `<p class="cast-tag">${c.emoji} ${c.name}<small>${c.role}</small></p>`;
+  const who = PARTNERS_BY_ID[e.cast === 'partner' ? p.partner : e.cast];
+  return who ? `<p class="cast-tag">${who.emoji} ${who.name}<small>${who.job}</small></p>` : '';
 };
 
-// 日常事件的文字可以是好幾個版本，依第幾次出現輪流用
-const eventText = (e, p) => (Array.isArray(e.text) ? e.text[(p.v ?? 0) % e.text.length] : e.text);
+// 日常事件的文字可以是好幾個版本，依第幾次出現輪流用；{伴侶} 換成出卡當時的對象
+const fill = (text, p) => esc(fillNames(text, p.partner));
+const eventText = (e, p) => fill(Array.isArray(e.text) ? e.text[(p.v ?? 0) % e.text.length] : e.text, p);
 
 function eventCard(p, state) {
   const e = EVENTS_BY_ID[p.id];
   if (p.step === 'choose') {
     return `
-      ${castTag(e)}
-      <h2 id="card-title">${esc(e.title)}</h2>
-      <p class="speech">${esc(eventText(e, p))}</p>
+      ${castTag(e, p)}
+      <h2 id="card-title">${fill(e.title, p)}</h2>
+      <p class="speech">${eventText(e, p)}</p>
       <div class="card-choices">
         ${e.choices.map((c, i) => {
           const hint = c.hint?.(state); // 提示可以依狀態回傳空字串，那就不顯示
-          return `<button class="btn btn-block choice-btn" data-action="eventChoose" data-index="${i}">${esc(c.text)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
+          return `<button class="btn btn-block choice-btn" data-action="eventChoose" data-index="${i}">${fill(c.text, p)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
         }).join('')}
       </div>`;
   }
   return `
-    <h2 id="card-title">${esc(e.title)}</h2>
-    <p class="muted">你選了：${esc(e.choices[p.choice].text)}</p>
-    ${p.text ? `<p class="speech">${esc(p.text)}</p>` : ''}
+    <h2 id="card-title">${fill(e.title, p)}</h2>
+    <p class="muted">你選了：${fill(e.choices[p.choice].text, p)}</p>
+    ${p.text ? `<p class="speech">${fill(p.text, p)}</p>` : ''}
     ${changes(p.deltas, p.notes)}
     <button class="btn btn-block btn-primary" data-action="cardClose">好</button>`;
 }
@@ -102,7 +106,7 @@ function awayCard(p) {
 function awayItem(h) {
   if (h.kind === 'event') {
     const e = EVENTS_BY_ID[h.id];
-    return `${esc(e.title)}：${esc(e.choices[h.choice].text)}${h.text ? `——${esc(h.text)}` : ''}`;
+    return `${fill(e.title, h)}：${fill(e.choices[h.choice].text, h)}${h.text ? `——${fill(h.text, h)}` : ''}`;
   }
   const n = NOTICES[h.id];
   const money = h.deltas?.money ? `（${deltaItems({ money: h.deltas.money }).join('')}）` : '';

@@ -1,6 +1,6 @@
 // 存讀檔（DESIGN.md §14.4）。格式變動時把 SAVE_VERSION 加 1，並在 MIGRATIONS 補上舊版升級函式
 const KEY = 'lifesim.save';
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 // 遷移函式要自給自足，不引用現在的遊戲程式，舊存檔才不會因為程式改動而升級失敗
 const MIGRATIONS = {
@@ -110,6 +110,21 @@ const MIGRATIONS = {
       ...save,
       version: 8,
       state: { ...s, flags: { ...s.flags, chapters }, tidbits: { seen: {}, lastDay: s.day } },
+    };
+  },
+  // v9：感情（v0.4 M11）。偏好先設「都可以」，跳一張通知告訴玩家可以改
+  8: save => {
+    const s = save.state;
+    const notice = { kind: 'notice', id: 'lovePref' };
+    return {
+      ...save,
+      version: 9,
+      state: {
+        ...s,
+        love: { pref: 'any', partner: null, stage: 'single', affinity: 0, since: null, nextAsk: 0, gone: {} },
+        pending: s.pending ?? notice,
+        queue: s.pending ? [...s.queue, notice] : s.queue,
+      },
     };
   },
 };

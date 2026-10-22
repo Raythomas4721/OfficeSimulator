@@ -1,6 +1,7 @@
 // 「今天」分頁：主畫面就是操作的地方（DESIGN.md §13）
 // 一天只有 0.4 秒，所以不做「今晚要做什麼」，直接調整每週行程
-import { DAILY, EXERCISE, SKILLS, THRESHOLDS, TIDBITS } from '../../data/balance.js';
+import { DAILY, EXERCISE, LOVE, SKILLS, THRESHOLDS, TIDBITS } from '../../data/balance.js';
+import { PARTNERS_BY_ID } from '../../data/partners.js';
 import { SLOT_ACTIVITIES, SLOT_SHORT } from '../../data/schedule.js';
 import { COURSES_BY_ID } from '../../data/courses.js';
 import { THOUGHTS } from '../../data/thoughts.js';
@@ -154,6 +155,13 @@ export const blocks = {
   },
 };
 
+// 社交時段依感情狀況是聚會或約會（§9.4）
+function socialHint(state, k) {
+  const partner = PARTNERS_BY_ID[state.love.partner];
+  if (partner) return `和${partner.name}約會：好感 +${LOVE.dateGain * k}`;
+  return state.love.pref === 'none' ? '和朋友聚會' : '聚會：比較容易認識新對象';
+}
+
 function activityHint(state, id, weekend) {
   const fx = slotEffects(id, weekend);
   const k = weekend ? DAILY.weekendMultiplier : 1;
@@ -163,6 +171,7 @@ function activityHint(state, id, weekend) {
     parts.push(course ? `上課出席 +${k}（${course.title}）` : `自己讀書：表現 +${SKILLS.selfStudy * k}`);
   }
   if (id === 'exercise') parts.push(`體力上限 +${EXERCISE.maxPerSlot * k}`);
+  if (id === 'social') parts.push(socialHint(state, k));
   if (fx.energy) parts.push(`體力 ${formatSigned(fx.energy)}`);
   if (fx.mood) parts.push(`心情 ${formatSigned(fx.mood)}`);
   if (id === 'overtime') parts.push('表現↑', `加班費 +${formatNumber(overtimePay(state, weekend))}`);

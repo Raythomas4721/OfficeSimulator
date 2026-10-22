@@ -1,6 +1,7 @@
 // 進入點：載入存檔、啟動迴圈、掛上 UI
 import { SAVE, TIME } from './data/balance.js';
 import { SLOT_ACTIVITIES } from './data/schedule.js';
+import { LOVE_PREFS_BY_ID } from './data/partners.js';
 import { createState } from './core/state.js';
 import { createRng, randomSeed } from './core/rng.js';
 import { createLoop } from './core/loop.js';
@@ -50,6 +51,12 @@ const ctl = {
     game.state.schedule[index] = activity;
     save();
     session.tutorial?.notify('schedule');
+  },
+  // 戀愛偏好只影響之後會遇到誰，不會結束現在的關係（§9.4）
+  setLovePref(pref) {
+    if (!LOVE_PREFS_BY_ID[pref]) return;
+    game.state.love.pref = pref;
+    save();
   },
   applyPreset(id) {
     const schedule = presetSchedule(game.state, id);
@@ -137,14 +144,14 @@ const ctl = {
     session.ui.refresh();
   },
   newGameWithSeed(seed) {
-    const name = game.state.player.name;
+    const { player, love } = game.state;
     endSession();
-    startSession(newGame(name, seed));
+    startSession(newGame(player.name, seed, love.pref));
   },
 };
 
-function newGame(name, seed = randomSeed()) {
-  return { state: createState(name), seed, rng: createRng(seed) };
+function newGame(name, seed = randomSeed(), pref = 'any') {
+  return { state: createState(name, pref), seed, rng: createRng(seed) };
 }
 
 // 跳出檢討卡片就停下來，等玩家回應
@@ -229,7 +236,7 @@ async function boot() {
     const s = choice.save ?? saved; // 從標題畫面匯入存檔碼時會帶 save
     startSession({ state: s.state, seed: s.seed, rng: createRng(s.rng) }, Date.now() - s.savedAt);
   } else {
-    startSession(newGame(choice.name));
+    startSession(newGame(choice.name, randomSeed(), choice.pref));
   }
 }
 

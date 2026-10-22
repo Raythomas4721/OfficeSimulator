@@ -7,10 +7,11 @@ import { applyDailyIncome, applyMonthStart } from '../systems/finance.js';
 import { leaveOn, processStatuses } from '../systems/statuses.js';
 import { checkCollapse, onStatusEnded, resetHealthYear, sickPayRate } from '../systems/health.js';
 import { annualReview } from '../systems/annual.js';
-import { rollEvent } from '../systems/events.js';
+import { rollEvent, triggerEvent } from '../systems/events.js';
 import { checkMilestones } from '../systems/milestones.js';
 import { checkCourse } from '../systems/study.js';
 import { checkChapter, rollTidbit } from '../systems/chapters.js';
+import { applyLoveDay, checkLove } from '../systems/love.js';
 
 export function advanceDay(state, rng) {
   const cal = calendarOf(state.day);
@@ -28,6 +29,7 @@ export function advanceDay(state, rng) {
   applySlot(state, activity, weekend, multiplier);
   applySleep(state);
   applyHealthDay(state);
+  applyLoveDay(state);
 
   // 3. 數值門檻、持續狀態、傷病
   clampVitals(state);
@@ -45,6 +47,8 @@ export function advanceDay(state, rng) {
 
   state.day += 1;
 
-  // 5. 事件在新的一天開始時（06:00）擲骰，條件也照新的一天判斷
+  // 5. 事件在新的一天開始時（06:00）擲骰，條件也照新的一天判斷；感情的轉折（告白、談談）優先
+  const loveEvent = checkLove(state);
+  if (loveEvent) triggerEvent(state, loveEvent);
   rollEvent(state, rng);
 }

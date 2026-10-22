@@ -5,6 +5,7 @@ export const SLOT_ACTIVITIES = [
   { id: 'slack', label: '耍廢', emoji: '🎮' },
   { id: 'study', label: '進修', emoji: '📚' },
   { id: 'exercise', label: '運動', emoji: '🏃' },
+  { id: 'social', label: '社交', emoji: '🥂' }, // 單身是聚會、有對象是約會（§9.4）
 ];
 
 // 索引 0～6 對應週一到週日

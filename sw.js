@@ -1,7 +1,7 @@
 // service worker（DESIGN.md §14.5）：先拿快取（cache-first），沒有才上網抓，加入主畫面後可以離線玩
 // 下面這段由 tools/update-sw.js 產生；改了任何遊戲檔案後重跑，版本號會跟著內容變，玩家才會拿到新版
 // <generated>
-const VERSION = 'c6650e74';
+const VERSION = '9c30ca73';
 const ASSETS = [
   './',
   'fonts/Cubic_11.woff2',
@@ -30,6 +30,7 @@ const ASSETS = [
   'src/data/events-first-year.js',
   'src/data/events-holidays.js',
   'src/data/events-life.js',
+  'src/data/events-love.js',
   'src/data/events-memes.js',
   'src/data/events-study.js',
   'src/data/events.js',
@@ -37,6 +38,7 @@ const ASSETS = [
   'src/data/milestones.js',
   'src/data/names.js',
   'src/data/notices.js',
+  'src/data/partners.js',
   'src/data/reviews.js',
   'src/data/schedule.js',
   'src/data/seasons.js',
@@ -54,6 +56,7 @@ const ASSETS = [
   'src/systems/events.js',
   'src/systems/finance.js',
   'src/systems/health.js',
+  'src/systems/love.js',
   'src/systems/milestones.js',
   'src/systems/offline.js',
   'src/systems/review.js',
@@ -72,6 +75,7 @@ const ASSETS = [
   'src/ui/tabs/career.js',
   'src/ui/tabs/home.js',
   'src/ui/tabs/menu.js',
+  'src/ui/tabs/people.js',
   'src/ui/text.js',
   'src/ui/tutorial.js',
   'src/ui/upcoming.js',

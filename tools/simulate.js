@@ -16,7 +16,7 @@ import { ageOn } from '../src/core/calendar.js';
 const YEARS = Number(process.argv[2] ?? 10);
 const SEED = Number(process.argv[3] ?? 12345);
 
-// overtime／exercise：哪幾格加班、運動（0 = 週一）
+// overtime／exercise／social：哪幾格加班、運動、社交（0 = 週一）
 // study：管理不夠升下一級時報名課程（能報 PMP 就先報，否則主管培訓班），上課期間把這幾格改成進修
 const STRATEGIES = [
   { name: '不加班', overtime: [] },
@@ -27,13 +27,15 @@ const STRATEGIES = [
   { name: '加班 2 格＋上課、婉拒升遷', overtime: [1, 3], study: [0, 2], promotion: 'decline' },
   { name: '加班 3 格＋上課', overtime: [0, 2, 4], study: [1, 3] },
   { name: '加班 4 格＋上課', overtime: [0, 1, 2, 3], study: [4, 5] },
+  { name: '加班 2 格＋週六社交', overtime: [1, 3], social: [5] },
 ];
 const EVENT_SAMPLE = 3; // 列出事件次數的策略
 
-function scheduleFor(state, { overtime, study = [], exercise = [] }) {
+function scheduleFor(state, { overtime, study = [], exercise = [], social = [] }) {
   const s = Array(7).fill('rest');
   overtime.forEach(i => (s[i] = 'overtime'));
   exercise.forEach(i => (s[i] = 'exercise'));
+  social.forEach(i => (s[i] = 'social'));
   if (state.study.course) study.forEach(i => (s[i] = 'study'));
   return s;
 }
@@ -51,6 +53,8 @@ function simulate(strategy, years = YEARS) {
   const state = createState('模擬');
   const rng = createRng(SEED);
   const cards = [];
+  state.loveLog = { meet: 0, dating: 0, breakup: 0 }; // 只有模擬用，紀錄只留 30 筆不夠算
+  let { partner, stage } = state.love;
   // 檢討卡片選「照舊」，所以由策略每天重新排行程（上課期間才排進修）
   const endYear = calendarOf(0).year + years;
   while (calendarOf(state.day).year < endYear || calendarOf(state.day).month < 2) {
@@ -65,6 +69,10 @@ function simulate(strategy, years = YEARS) {
       }
       autoResolve(state, rng, { promotion });
     }
+    if (state.love.partner && state.love.partner !== partner) state.loveLog.meet++;
+    if (state.love.stage === 'dating' && stage !== 'dating') state.loveLog.dating++;
+    if (stage === 'dating' && state.love.stage === 'single') state.loveLog.breakup++;
+    ({ partner, stage } = state.love);
   }
   const title = LADDER.find(l => l.level === state.job.level).title;
   return {
@@ -82,8 +90,15 @@ function simulate(strategy, years = YEARS) {
       上課: Object.values(state.study.done).reduce((a, b) => a + b, 0),
       重症: (state.events.counts.stomach_ulcer ?? 0) + (state.events.counts.palpitation ?? 0),
       約談: state.events.counts.pip_talk ?? 0,
+      感情: loveSummary(state),
     },
   };
+}
+
+// 感情（§9.4）：認識幾個人、交往過幾個、現在的狀態
+function loveSummary(state) {
+  const kinds = state.loveLog;
+  return `認識${kinds.meet}、交往${kinds.dating}、分手${kinds.breakup}、${{ single: '單身', crush: '曖昧', dating: '交往中', married: '已婚' }[state.love.stage]}`;
 }
 
 const results = STRATEGIES.map(s => ({ name: s.name, ...simulate(s) }));
@@ -104,7 +119,7 @@ console.log(`各章節：${perChapter.join('、')}`);
 console.log(`重複出現：${repeated.map(([id, n]) => `${EVENTS_BY_ID[id].title} ×${n}`).join('、') || '沒有'}`);
 console.log(`不該重複卻重複：${wrong.map(([id]) => EVENTS_BY_ID[id].title).join('、') || '沒有'}`);
 console.log(`生活小事：說了 ${Object.keys(life.state.tidbits.seen).length} / ${TIDBITS.length} 句`);
-const stories = Object.groupBy(EVENT_LIST.filter(e => e.story), e => e.story);
+const stories = Object.groupBy(EVENT_LIST.filter(e => e.story && e.story !== 'love'), e => e.story);
 console.log(`故事線：${Object.entries(stories).map(([id, list]) => `${id} ${list.filter(e => counts[e.id]).length}/${list.length}`).join('、')}（阿凱的店爆紅、倒了二選一）`);
 const missed = list => list.filter(e => !counts[e.id] && !e.followUp);
 console.log(`錯過的年紀事件：${missed(EVENT_LIST.filter(e => e.age && !e.story)).map(e => e.title).join('、') || '沒有'}`);

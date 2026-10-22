@@ -11,6 +11,7 @@ const STATS = {
   language: s => [s.skills, 'language', SKILLS.max],
   programming: s => [s.skills, 'programming', SKILLS.max],
   energyMax: s => [s.vitals, 'energyMax', EXERCISE.capMax, EXERCISE.baseMax],
+  affinity: s => [s.love, 'affinity', 100], // 伴侶或曖昧對象的好感（v0.4）
 };
 
 export function applyEffects(state, effects = {}) {

@@ -5,11 +5,13 @@ import * as header from './header.js';
 import * as cards from './cards.js';
 import * as home from './tabs/home.js';
 import * as career from './tabs/career.js';
+import * as people from './tabs/people.js';
 import * as menu from './tabs/menu.js';
 
 const TABS = [
   { id: 'today', label: '今天', icon: '🏠', view: home },
   { id: 'career', label: '職涯', icon: '💼', view: career },
+  { id: 'people', label: '人際', icon: '💞', view: people },
   { id: 'menu', label: '選單', icon: '☰', view: menu },
 ];
 

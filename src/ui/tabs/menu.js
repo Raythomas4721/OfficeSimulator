@@ -1,4 +1,5 @@
 import { decodeSaveCode } from '../../core/save.js';
+import { LOVE_PREFS } from '../../data/partners.js';
 import { esc } from '../format.js';
 
 // 存檔碼區塊的狀態：'export'、'import' 或 null；訊息用 data-bind 顯示，才不會重畫掉輸入框
@@ -26,6 +27,11 @@ export function render({ ctl }) {
       <div data-block="saveCode"></div>
       <p class="muted" data-bind="codeMessage"></p>
     </section>
+    <section class="card" id="love-pref">
+      <h2>喜歡的對象</h2>
+      <div class="preset-grid" data-block="lovePref"></div>
+      <p class="muted">只影響之後會遇到誰，不會結束現在的關係。選「先不談戀愛」就不會遇到新對象，社交時段只是和朋友聚會。</p>
+    </section>
     <section class="card">
       <h2>重新開始</h2>
       <p>刪掉目前的存檔，從 22 歲重新來過。</p>
@@ -48,6 +54,8 @@ export const binds = {
 };
 
 export const blocks = {
+  lovePref: ({ state }) =>
+    LOVE_PREFS.map(p => `<button class="btn" data-action="lovePref" data-value="${p.id}" aria-pressed="${state.love.pref === p.id}">${p.label}</button>`).join(''),
   saveCode: () => {
     if (mode === 'export') {
       return `
@@ -64,6 +72,7 @@ export const blocks = {
 };
 
 export const actions = {
+  lovePref: ({ value }, ctl) => ctl.setLovePref(value),
   exportCode: (_, ctl) => {
     mode = 'export';
     code = ctl.exportCode();

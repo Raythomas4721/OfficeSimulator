@@ -53,6 +53,17 @@ export const NOTICES = {
     title: d => `第${CHAPTER_NUMBERS[d.n - 1]}章：${chapterOf(d).title}`,
     lines: d => [chapterOf(d).text],
   },
+  loveFade: {
+    title: () => '後來就沒聯絡了',
+    lines: d => [`和${d.name}的訊息越來越少，有一天你發現，上一則已經是一個月前。`, '有些人只是經過你的人生。也沒關係。'],
+  },
+  lovePref: {
+    title: () => '可以談戀愛了',
+    lines: () => [
+      '新版本加入了感情：行程多了「社交」，單身時是聚會，有對象時是約會。',
+      '喜歡的對象先設成「都可以」，可以到「選單」改，也可以選先不談戀愛。',
+    ],
+  },
   discharge: {
     title: () => '出院了',
     lines: () => ['在醫院躺了兩週，終於出院。', '要繼續這樣拚下去，還是重新開始人生？'],

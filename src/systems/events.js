@@ -8,6 +8,7 @@ import { pushCard } from './cards.js';
 import { applyEffects, diff, snapshot } from './effects.js';
 import { addStatus } from './statuses.js';
 import { collapse, hospitalize, startSickLeave } from './health.js';
+import { applyLove } from './love.js';
 
 export function eventCalendar(day) {
   const c = calendarOf(day);
@@ -110,7 +111,8 @@ export function triggerEvent(state, id) {
   state.events.counts[id] = (state.events.counts[id] ?? 0) + 1;
   if (state.period) state.period.events = (state.period.events ?? 0) + 1;
   // v：第幾次出現，日常事件依此換一個版本的文字（§10.2）
-  pushCard(state, { kind: 'event', id, step: 'choose', v: state.events.counts[id] - 1 });
+  // partner：當時的伴侶，卡片上的 {伴侶} 用這個人的名字（分手後再看結果也不會變）
+  pushCard(state, { kind: 'event', id, step: 'choose', v: state.events.counts[id] - 1, partner: state.love.partner ?? undefined });
 }
 
 export const defaultChoice = id => Math.max(0, EVENTS_BY_ID[id].choices.findIndex(c => c.default));
@@ -130,6 +132,7 @@ export function chooseEvent(state, rng, index) {
   let text = choice.result ?? '';
   let followUp = null;
   let illness = null;
+  let love = choice.love ?? null;
   // effects 可以是函式，依目前狀態決定數值（例如學費補助是學費的一半）
   const apply = fx => {
     const effects = typeof fx === 'function' ? fx(state) : fx;
@@ -144,9 +147,11 @@ export function chooseEvent(state, rng, index) {
       apply(choice.chance.effects);
       text = choice.chance.result ?? text;
       followUp = choice.chance.then ?? null;
+      love = choice.chance.love ?? love;
     } else {
       apply(choice.chance.otherwise);
       text = choice.chance.otherwiseResult ?? text;
+      love = choice.chance.otherwiseLove ?? love;
     }
   }
 
@@ -164,13 +169,14 @@ export function chooseEvent(state, rng, index) {
   }
   if (choice.crisis) Object.assign(state.crisis, choice.crisis); // 例如被約談後進入績效改善計畫
   if (choice.flags) Object.assign(state.flags, choice.flags); // 讓之後的故事線看得到這個選擇
+  if (love) applyLove(state, love);
   if (choice.sickLeave) {
     startSickLeave(state, state.day, choice.sickLeave);
     notes.push({ kind: 'sickLeave', days: choice.sickLeave });
   }
 
   Object.assign(card, { step: 'result', choice: index, text, deltas: diff(before, snapshot(state)), notes });
-  addLog(state, { kind: 'event', id: event.id, choice: index });
+  addLog(state, { kind: 'event', id: event.id, choice: index, partner: card.partner });
   if (illness === 'collapse') collapse(state, state.day);
   if (illness === 'hospital') hospitalize(state, state.day);
   if (followUp) triggerEvent(state, followUp);
