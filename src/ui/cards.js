@@ -44,7 +44,10 @@ function eventCard(p, state) {
       <h2 id="card-title">${esc(e.title)}</h2>
       <p class="speech">${esc(eventText(e, p))}</p>
       <div class="card-choices">
-        ${e.choices.map((c, i) => `<button class="btn btn-block choice-btn" data-action="eventChoose" data-index="${i}">${esc(c.text)}${c.hint ? `<small>${esc(c.hint(state))}</small>` : ''}</button>`).join('')}
+        ${e.choices.map((c, i) => {
+          const hint = c.hint?.(state); // 提示可以依狀態回傳空字串，那就不顯示
+          return `<button class="btn btn-block choice-btn" data-action="eventChoose" data-index="${i}">${esc(c.text)}${hint ? `<small>${esc(hint)}</small>` : ''}</button>`;
+        }).join('')}
       </div>`;
   }
   return `

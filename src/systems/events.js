@@ -1,6 +1,7 @@
 // 事件系統（DESIGN.md §10）：每天開始時擲骰，跳出事件卡片；玩家選擇後顯示結果
 import { EVENTS } from '../data/balance.js';
 import { EVENT_LIST, EVENTS_BY_ID } from '../data/events.js';
+import { chapterOfAge } from '../data/chapters.js';
 import { ageOn, calendarOf, dayOfDate, isWeekend } from '../core/calendar.js';
 import { addLog } from '../core/state.js';
 import { pushCard } from './cards.js';
@@ -24,12 +25,13 @@ const available = (state, e) => (e.repeat ? cooledDown(state, e) : !seen(state, 
 // age: [最小, 最大)，只在那段年紀出現（§5.5）
 export const ageFits = (e, day) => !e.age || (ageOn(day) >= e.age[0] && ageOn(day) < e.age[1]);
 
-// 新人劇情之間比較密；其他事件和上一個事件至少隔 minGapDays
-export const gapOf = e => (e.on?.day != null ? EVENTS.storyGapDays : EVENTS.minGapDays);
+// 新人劇情之間比較密；其他事件和上一個事件至少隔 minGapDays，年輕時事情多、越後面越疏（依章節）
+const minGapOn = day => EVENTS.minGapDays[chapterOfAge(ageOn(day)).n - 1];
+export const gapOf = (e, day) => (e.on?.day != null ? EVENTS.storyGapDays : minGapOn(day));
 
 const weightOf = (e, state, c) => {
   const w = typeof e.weight === 'function' ? e.weight(state, c) : e.weight ?? EVENTS.weight;
-  return e.age ? w * EVENTS.ageWeight : w;
+  return w * (e.age ? EVENTS.ageWeight : 1) * (e.story ? EVENTS.storyWeight : 1);
 };
 
 // 同一個日子的節日是同一個節日的不同版本（例如過年 22 歲版、28 歲版），共用冷卻
@@ -85,10 +87,11 @@ export function rollEvent(state, rng) {
   const since = state.day - (state.events.lastDay ?? -Infinity);
   if (since < EVENTS.storyGapDays) return;
   const list = scheduledList(state, () => state.day);
-  const due = list.find(x => x.day <= state.day && since >= gapOf(x.event));
+  const minGap = minGapOn(state.day);
+  const due = list.find(x => x.day <= state.day && since >= gapOf(x.event, state.day));
   if (due) return triggerEvent(state, due.event.id);
-  if (state.pending || since < EVENTS.minGapDays) return;
-  if (list.some(x => x.day - state.day < EVENTS.minGapDays)) return;
+  if (state.pending || since < minGap) return;
+  if (list.some(x => x.day - state.day < minGap)) return;
   if (rng.next() >= EVENTS.dailyChance) return;
   const c = eventCalendar(state.day);
   const pool = EVENT_LIST.filter(
@@ -160,6 +163,7 @@ export function chooseEvent(state, rng, index) {
     notes.push({ kind: 'forceSlot', endDay, ...f });
   }
   if (choice.crisis) Object.assign(state.crisis, choice.crisis); // 例如被約談後進入績效改善計畫
+  if (choice.flags) Object.assign(state.flags, choice.flags); // 讓之後的故事線看得到這個選擇
   if (choice.sickLeave) {
     startSickLeave(state, state.day, choice.sickLeave);
     notes.push({ kind: 'sickLeave', days: choice.sickLeave });

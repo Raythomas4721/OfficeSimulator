@@ -28,10 +28,10 @@ export const STUDY_EVENTS = [
       {
         text: '申請補助',
         effects: s => (courseOf(s) ? { money: Math.round(courseOf(s).cost / 2), mood: 3 } : {}),
-        result: '補助下來了！不過要簽一年內不離職的同意書。（轉職 v0.3 起會綁約）',
+        result: '補助下來了！不過要簽一年內不離職的同意書。（轉職 v0.5 起會綁約）',
         default: true,
       },
-      { text: '不用了，自己出', effects: { mood: 1 }, result: '不想被綁住，學費自己來。' },
+      { text: '不用了，自己出', effects: { mood: 1 }, result: '不想被綁住，學費自己來。自由的代價是一萬多塊。' },
     ],
   },
   {
@@ -49,7 +49,7 @@ export const STUDY_EVENTS = [
         chance: {
           p: 0.6,
           effects: { performance: 1 },
-          result: '王經理點點頭：「有心就好。」',
+          result: '王經理點點頭：「有心就好。」然後把案子交給了旁邊沒在上課的阿凱。',
           otherwise: { mood: -3 },
           otherwiseResult: '王經理：「學歸學，工作不要耽誤。」',
         },
@@ -59,7 +59,7 @@ export const STUDY_EVENTS = [
         text: '這週先不去上課，留下來',
         effects: { performance: 2, mood: -3 },
         forceSlots: { activity: 'overtime', weeks: 1, slots: [1, 3] },
-        result: '這週的課只好先翹掉了。',
+        result: '這週的課只好先翹掉了。老師點名的時候，同學幫你喊了「有」。',
       },
     ],
   },
@@ -76,9 +76,9 @@ export const STUDY_EVENTS = [
         text: '一起去',
         effects: { money: -350, mood: 6 },
         delayed: { days: 1, effects: { energy: -8 } },
-        result: '聊到快十二點，認識了幾個不同產業的朋友。',
+        result: '聊到快十二點，認識了幾個不同產業的朋友。原來每個產業都有一個王經理。',
       },
-      { text: '回家睡覺', result: '明天還要上班，先回家了。', default: true },
+      { text: '回家睡覺', result: '明天還要上班，先回家了。隔天在群組看到鹹酥雞的照片，你的胃很後悔。', default: true },
     ],
   },
   {
@@ -93,9 +93,9 @@ export const STUDY_EVENTS = [
       {
         text: '熬夜認真寫',
         effects: s => (courseOf(s) ? { energy: -12, [mainSkill(s)]: 2 } : { energy: -12 }),
-        result: '寫到半夜，不過真的學到東西。',
+        result: '寫到半夜，不過真的學到東西。學到最多的是「不要拖到前一天」，雖然下次還是會。',
       },
-      { text: '隨便寫寫交差', effects: { mood: 1 }, result: '交了就好。', default: true },
+      { text: '隨便寫寫交差', effects: { mood: 1 }, result: '交了就好。老師的評語：「看得出來很努力在湊字數。」', default: true },
     ],
   },
   {
@@ -111,10 +111,10 @@ export const STUDY_EVENTS = [
         text: '這週翹課，好好休息',
         effects: { mood: 4 },
         forceSlots: { activity: 'rest', weeks: 1, slots: [0, 1, 2, 3, 4] },
-        result: '這週晚上都待在家。出席率要小心了。',
+        result: '這週晚上都待在家。出席率要小心了，但黑眼圈終於淡了一點。',
         default: true,
       },
-      { text: '咬牙撐下去', effects: { mood: -4 }, result: '學費都繳了，不能放棄。' },
+      { text: '咬牙撐下去', effects: { mood: -4 }, result: '學費都繳了，不能放棄。沉沒成本是最好的鬧鐘。' },
     ],
   },
   {
@@ -123,8 +123,8 @@ export const STUDY_EVENTS = [
     text: '路過書店，商業書和工具書全部 79 折。',
     condition: s => !studying(s) && slotsOf(s, 'study') > 0,
     choices: [
-      { text: '買幾本專業書', effects: { money: -800, performance: 2 }, result: '自學的晚上有新東西可以看了。' },
-      { text: '逛逛就好', result: '翻了幾頁，放回架上。', default: true },
+      { text: '買幾本專業書', effects: { money: -800, performance: 2 }, result: '自學的晚上有新東西可以看了。也有新東西可以墊泡麵了。' },
+      { text: '逛逛就好', result: '翻了幾頁，放回架上。你拍了書名，打算之後去圖書館借。你不會去。', default: true },
     ],
   },
   {
@@ -145,7 +145,7 @@ export const STUDY_EVENTS = [
           otherwiseResult: '雞同鴨講了一下午，有點丟臉…',
         },
       },
-      { text: '請英文好的同事幫忙', result: '躲在座位上假裝很忙。', default: true },
+      { text: '請英文好的同事幫忙', result: '躲在座位上假裝很忙。客戶經過時你說了一句「Hello」，用盡了今天所有的勇氣。', default: true },
     ],
   },
   {
@@ -160,12 +160,12 @@ export const STUDY_EVENTS = [
         chance: {
           p: programmingChance,
           effects: { performance: 3, mood: 4 },
-          result: '程式跑起來了！以後每週省下三小時。',
+          result: '程式跑起來了！以後每週省下三小時。你決定不告訴王經理，用這三小時繼續假裝在整理報表。',
           otherwise: { energy: -10, mood: -3 },
           otherwiseResult: '寫了一整晚還是跑不動，明天繼續手動做…',
         },
       },
-      { text: '繼續手動做', effects: { energy: -3 }, result: '複製、貼上、複製、貼上…', default: true },
+      { text: '繼續手動做', effects: { energy: -3 }, result: '複製、貼上、複製、貼上……你的 Ctrl 鍵已經磨到發亮了。', default: true },
     ],
   },
   {

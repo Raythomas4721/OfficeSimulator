@@ -7,7 +7,7 @@ export function upcoming(state) {
   const { year } = calendarOf(state.day);
   let best = { day: dayOfDate(year + 1, 1, 1), title: '年度回顧' };
   const last = state.events.lastDay ?? -Infinity;
-  const next = nextScheduled(state, e => Math.max(state.day, last + gapOf(e)));
+  const next = nextScheduled(state, e => Math.max(state.day, last + gapOf(e, state.day)));
   if (next && next.day < best.day) best = { day: next.day, title: next.event.title };
   return best;
 }
