@@ -83,7 +83,7 @@ export const LIFE_EVENTS = [
     title: '演算法推薦的線上課',
     text: '社群一直跳出廣告：「三十天學會資料分析，限時五折！」',
     choices: [
-      { text: '買了', effects: { money: -3_000, professional: 2 }, result: '看了前幾集，有學到東西，剩下的…之後再說。' },
+      { text: '買了', effects: { money: -3_000, performance: 2 }, result: '看了前幾集，有學到東西，剩下的…之後再說。' },
       { text: '滑掉', result: '演算法好像更懂你了。', default: true },
     ],
   },

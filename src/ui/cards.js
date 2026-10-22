@@ -2,10 +2,7 @@
 import { EVENTS_BY_ID } from '../data/events.js';
 import { CAST_BY_ID } from '../data/cast.js';
 import { NOTICES } from '../data/notices.js';
-import { EXAM, REVIEW } from '../data/balance.js';
-import { workEffects } from '../systems/work.js';
-import { examChance } from '../systems/study.js';
-import { esc, formatMoney, formatSigned } from './format.js';
+import { esc, formatMoney } from './format.js';
 import { deltaItems, noteText } from './text.js';
 import * as review from './review.js';
 
@@ -19,11 +16,11 @@ export const blocks = {
       p.kind === 'review' ? review.reviewCard(p, state)
       : p.kind === 'event' ? eventCard(p, state)
       : p.kind === 'away' ? awayCard(p)
-      : noticeCard(p, state);
+      : noticeCard(p);
     // data-card 讓每張新卡片的 HTML 都不同，滑出動畫才會重播
     return `
       <div class="sheet-backdrop">
-        <section class="sheet card" role="dialog" aria-modal="true" aria-labelledby="card-title" data-card="${p.kind}-${p.id ?? p.number}-${p.step ?? ''}">
+        <section class="sheet card" role="dialog" aria-modal="true" aria-labelledby="card-title" data-card="${p.kind}-${p.id ?? p.number ?? p.year}-${p.step ?? ''}">
           ${inner}
         </section>
       </div>`;
@@ -55,7 +52,7 @@ function eventCard(p, state) {
     <button class="btn btn-block btn-primary" data-action="cardClose">好</button>`;
 }
 
-function noticeCard(p, state) {
+function noticeCard(p) {
   const n = NOTICES[p.id];
   const data = p.data ?? {};
   const lines = n.lines(data).filter(Boolean);
@@ -63,10 +60,7 @@ function noticeCard(p, state) {
   const actions = n.actions?.(data);
   const buttons = actions
     ? actions
-        .map((a, i) => {
-          const hint = actionHint(a.id, state, data);
-          return `<button class="btn btn-block choice-btn${i === 0 ? ' btn-primary' : ''}" data-action="noticeAction" data-value="${a.id}">${a.label}${hint ? `<small>${hint}</small>` : ''}</button>`;
-        })
+        .map((a, i) => `<button class="btn btn-block${i === 0 ? ' btn-primary' : ''}" data-action="noticeAction" data-value="${a.id}">${a.label}</button>`)
         .join('')
     : '<button class="btn btn-block btn-primary" data-action="cardClose">好</button>';
   return `
@@ -116,22 +110,6 @@ function formatDuration(ms) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} 小時${minutes % 60 ? ` ${minutes % 60} 分` : ''}`;
   return `${Math.floor(hours / 24)} 天${hours % 24 ? ` ${hours % 24} 小時` : ''}`;
-}
-
-// 選項的效果說明，照目前的數值算：升遷抉擇、考前一晚
-const pct = p => `${Math.round(p * 100)}%`;
-
-function actionHint(id, state, data) {
-  if (id === 'examSleep') return `通過機率約 ${pct(examChance(state, data))}`;
-  if (id === 'examCram') return `通過機率約 ${pct(examChance(state, data, true))}，但體力 ${formatSigned(EXAM.cramEnergy)}`;
-  if (id === 'acceptPromotion') {
-    const salary = Math.round((state.job.salary * (1 + REVIEW.promotionRaise)) / REVIEW.salaryRound) * REVIEW.salaryRound;
-    const now = workEffects(state).energy;
-    const next = workEffects(state, state.job.level + 1).energy;
-    return `月薪 ${formatMoney(state.job.salary)} → ${formatMoney(salary)}，但平日上班體力 ${formatSigned(now)} → ${formatSigned(next)}`;
-  }
-  if (id === 'declinePromotion') return `維持現職，心情 +${REVIEW.declineMood}；明年考核還能再升`;
-  return '';
 }
 
 function changes(deltas, notes = []) {

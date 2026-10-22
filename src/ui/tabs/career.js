@@ -1,8 +1,8 @@
 import { LADDER } from '../../data/jobs.js';
 import { CAST } from '../../data/cast.js';
-import { CERTS, COURSES, COURSES_BY_ID } from '../../data/courses.js';
+import { COURSES, COURSES_BY_ID } from '../../data/courses.js';
 import { SKILL_LABELS, SKILL_LIST } from '../../data/skills.js';
-import { FITNESS } from '../../data/balance.js';
+import { EXERCISE } from '../../data/balance.js';
 import { monthsBetween } from '../../core/calendar.js';
 import { gradeFor } from '../../systems/work.js';
 import { enrollBlocker, requiredAttendance } from '../../systems/study.js';
@@ -30,9 +30,8 @@ export function render() {
       <p class="muted">每年 1/1 依工作表現考核：A ≥ 80、B ≥ 60、C ≥ 40，其餘為 D。考核後表現打五折，重新累積。</p>
     </section>
     <section class="card">
-      <h2>技能與體能</h2>
+      <h2>技能與健康</h2>
       <ul class="skills" data-block="skills"></ul>
-      <p data-block="certs"></p>
     </section>
     <section class="card">
       <h2>進修</h2>
@@ -77,20 +76,25 @@ const skillRow = (label, value, use) => `
     <small class="muted">${use}</small>
   </li>`;
 
+// 體力上限 100～130，長條畫的是運動累積了多少
+function healthRow(state) {
+  const extra = state.vitals.energyMax - EXERCISE.baseMax;
+  const pct = (extra / (EXERCISE.capMax - EXERCISE.baseMax)) * 100;
+  return `
+  <li>
+    <div class="meter"><span class="meter-label">體力上限</span><div class="bar bar-energy"><i style="width:${pct}%"></i></div><b class="meter-value">${Math.floor(state.vitals.energyMax)}</b></div>
+    <small class="muted">運動會提高（最高 ${EXERCISE.capMax}），不運動慢慢回落；每晚睡覺多恢復 ${(extra * EXERCISE.sleepPerPoint).toFixed(1)}</small>
+  </li>`;
+}
+
 export const blocks = {
   skills: ({ state }) =>
     SKILL_LIST.map(s => skillRow(s.label, state.skills[s.id], s.use)).join('') +
-    skillRow('體能', state.fitness, `靠運動累積、不運動會慢慢下降；體力上限 ${state.vitals.energyMax}，每晚睡覺多恢復 ${(state.fitness * FITNESS.sleepPerPoint).toFixed(1)}`),
-
-  certs: ({ state }) => {
-    const owned = Object.entries(state.study.certs);
-    if (!owned.length) return '<span class="muted">證照：還沒有。多益、PMP 課程結束後可以考。</span>';
-    return `證照：${owned.map(([id, day]) => `${CERTS[id].emoji} ${CERTS[id].title}（${formatDate(day, { weekday: false })}）`).join('、')}`;
-  },
+    healthRow(state),
 
   course: ({ state }) => {
     const c = state.study.course;
-    if (!c) return '<p class="muted">目前沒有上課。沒報名時，行程裡的進修會變成自學，專業慢慢提升。</p>';
+    if (!c) return '<p class="muted">目前沒有上課。沒報名時，行程裡的進修是自己讀書，工作表現會多一點。</p>';
     const course = COURSES_BY_ID[c.id];
     const required = requiredAttendance(course);
     return `
@@ -110,7 +114,7 @@ export const blocks = {
           <p><b>${c.emoji} ${c.title}</b>　${gain}</p>
           <p class="muted">${c.desc}</p>
           <p class="muted">約 ${courseLength(c.weeks)}・每週 ${c.slots} 格・學費 ${formatMoney(c.cost)}${done}</p>
-          ${c.exam ? `<p class="muted">結束後考試，考過拿到${CERTS[c.exam.cert].emoji} ${CERTS[c.exam.cert].title}和獎金 ${formatMoney(c.exam.bonus)}；${SKILL_LABELS[c.exam.skill]}越高越容易過</p>` : ''}${c.minLevel ? '<p class="muted">資深專員以上才能報名</p>' : ''}
+          ${c.minLevel ? '<p class="muted">資深專員以上才能報名</p>' : ''}
           <button class="btn btn-block" data-action="courseEnroll" data-value="${c.id}"${blocker ? ' disabled' : ''}>${blocker ?? '報名'}</button>
         </li>`;
     }).join(''),

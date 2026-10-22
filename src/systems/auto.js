@@ -4,17 +4,15 @@ import { closeCard } from './cards.js';
 import { chooseEvent, defaultChoice } from './events.js';
 import { resolveReview } from './review.js';
 import { acceptPromotion, declinePromotion } from './annual.js';
-import { takeExam } from './study.js';
 
 export function autoResolve(state, rng, { promotion = 'accept' } = {}) {
   const card = state.pending;
   if (!card) return;
-  if (card.kind === 'review') return resolveReview(state, null); // 照舊
-  if (card.kind === 'event' && card.step === 'choose') chooseEvent(state, rng, defaultChoice(card.id));
-  if (card.kind === 'notice' && card.data?.offer) {
-    if (promotion === 'accept') acceptPromotion(state);
-    else declinePromotion(state);
+  if (card.kind === 'review') {
+    if (card.annual?.offer && promotion === 'accept') acceptPromotion(state);
+    else if (card.annual?.offer) declinePromotion(state);
+    return resolveReview(state, null); // 行程照舊
   }
-  if (card.kind === 'notice' && card.id === 'exam') takeExam(state, rng, false); // 預設早點睡
+  if (card.kind === 'event' && card.step === 'choose') chooseEvent(state, rng, defaultChoice(card.id));
   closeCard(state); // 事件結果、通知（出院時選「繼續」）
 }

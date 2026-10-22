@@ -19,25 +19,17 @@ export function startPeriod(state) {
   };
 }
 
-// 在當天結算完、state.day 加 1 之前呼叫
-export function checkReview(state) {
-  if (calendarOf(state.day + 1).date !== 1 || calendarOf(state.day + 1).month !== 1) return;
-  state.flags.reviews += 1;
-  pushCard(state, {
-    kind: 'review',
-    type: 'yearly',
-    year: calendarOf(state.day).year,
-    report: buildReport(state),
-  });
-}
-
+// 選好明年的行程才關卡片、開始新的一年；有升遷抉擇時要先選
 export function resolveReview(state, schedule) {
+  const card = state.pending;
+  if (card?.annual?.offer && !card.promotion) return;
   if (schedule) state.schedule = [...schedule];
   closeCard(state);
   startPeriod(state);
 }
 
-function buildReport(state) {
+// 這一年的回顧資料，1/1 考核時和考核結果放在同一張卡片（§5.4）
+export function buildReport(state) {
   const p = state.period;
   return {
     startDay: p.startDay,

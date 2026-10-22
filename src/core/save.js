@@ -1,6 +1,6 @@
 // 存讀檔（DESIGN.md §14.4）。格式變動時把 SAVE_VERSION 加 1，並在 MIGRATIONS 補上舊版升級函式
 const KEY = 'lifesim.save';
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 // 遷移函式要自給自足，不引用現在的遊戲程式，舊存檔才不會因為程式改動而升級失敗
 const MIGRATIONS = {
@@ -74,6 +74,33 @@ const MIGRATIONS = {
     version: 6,
     state: { ...save.state, crisis: { pip: false, debtMonths: 0, debtPlan: false } },
   }),
+  // v7：M8 簡化。體能換算成體力上限；拿掉專業、多益、考試與證照；年底兩張卡合併成一張
+  6: save => {
+    const { fitness = 0, ...s } = save.state;
+    const { professional, ...skills } = s.skills;
+    const { certs, ...study } = s.study;
+    const { toeic, ...done } = study.done;
+    const removed = e => e.kind === 'examPass' || e.kind === 'examFail' || e.id === 'toeic';
+    // 舊的 1/1 考核通知併進前面那張 12/31 年度回顧；考試相關的卡片直接拿掉
+    const cards = [s.pending, ...s.queue].filter(Boolean);
+    const appraisal = cards.find(c => c.kind === 'notice' && c.id === 'review');
+    const recap = cards.find(c => c.kind === 'review' && !c.annual);
+    if (appraisal && recap) Object.assign(recap, { annual: appraisal.data, salary: appraisal.salary, bonus: appraisal.deltas?.money ?? 0, promotion: null });
+    const kept = cards.filter(c => !(c.kind === 'notice' && ['review', 'exam', 'examResult'].includes(c.id)));
+    return {
+      ...save,
+      version: 7,
+      state: {
+        ...s,
+        vitals: { ...s.vitals, energyMax: Math.min(130, 100 + fitness * 0.3) },
+        skills,
+        study: { ...study, done, course: study.course?.id === 'toeic' ? null : study.course },
+        log: s.log.filter(e => !removed(e)),
+        pending: kept[0] ?? null,
+        queue: kept.slice(1),
+      },
+    };
+  },
 };
 
 export function toSave({ state, seed, rng }, savedAt) {

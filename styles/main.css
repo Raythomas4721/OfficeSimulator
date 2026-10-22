@@ -174,7 +174,7 @@ p:last-child { margin-bottom: 0; }
 }
 
 .meter { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.meter-label { width: 2.5em; font-size: 14px; }
+.meter-label { min-width: 2.5em; font-size: 14px; white-space: nowrap; }
 .meter-value { width: 2.5em; text-align: right; font-variant-numeric: tabular-nums; }
 .bar { flex: 1; height: 16px; border: 2px solid var(--ink); background: var(--bg); }
 .bar i { display: block; height: 100%; transition: width 0.3s steps(4); }

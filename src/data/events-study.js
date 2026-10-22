@@ -114,7 +114,7 @@ export const STUDY_EVENTS = [
     text: '路過書店，商業書和工具書全部 79 折。',
     condition: s => !studying(s) && slotsOf(s, 'study') > 0,
     choices: [
-      { text: '買幾本專業書', effects: { money: -800, professional: 2 }, result: '自學的晚上有新東西可以看了。' },
+      { text: '買幾本專業書', effects: { money: -800, performance: 2 }, result: '自學的晚上有新東西可以看了。' },
       { text: '逛逛就好', result: '翻了幾頁，放回架上。', default: true },
     ],
   },
@@ -168,7 +168,7 @@ export const STUDY_EVENTS = [
     choices: [
       {
         text: '去看醫生，乖乖休息',
-        effects: { money: -1_500, fitness: -5 },
+        effects: { money: -1_500, energyMax: -1.5 },
         sickLeave: 3,
         result: '醫生說休息幾天就好，這陣子先別運動太猛。',
         default: true,
@@ -177,7 +177,7 @@ export const STUDY_EVENTS = [
         text: '貼個痠痛貼布繼續動',
         chance: {
           p: 0.4,
-          effects: { fitness: -15, money: -3_000, energy: -20, mood: -5 },
+          effects: { energyMax: -4.5, money: -3_000, energy: -20, mood: -5 },
           result: '越動越痛，傷得更重了，花了更多時間復健…',
           otherwiseResult: '休息一晚，好像沒事了。',
         },

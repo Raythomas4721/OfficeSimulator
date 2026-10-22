@@ -1,6 +1,6 @@
 // 「今天」分頁：主畫面就是操作的地方（DESIGN.md §13）
 // 一天只有 0.4 秒，所以不做「今晚要做什麼」，直接調整每週行程
-import { DAILY, FITNESS, SKILLS, THRESHOLDS } from '../../data/balance.js';
+import { DAILY, EXERCISE, SKILLS, THRESHOLDS } from '../../data/balance.js';
 import { SLOT_ACTIVITIES, SLOT_SHORT } from '../../data/schedule.js';
 import { COURSES_BY_ID } from '../../data/courses.js';
 import { THOUGHTS } from '../../data/thoughts.js';
@@ -65,7 +65,7 @@ export const binds = {
   },
   sleepLegend: ({ state }) => {
     const bonus = sleepEffects(state).energy - DAILY.sleep.energy;
-    return `💤 每晚睡覺體力 ${formatSigned(DAILY.sleep.energy)}${bonus >= 0.5 ? `（體能加成 +${bonus.toFixed(1)}）` : ''}；上班一天體力 ${formatSigned(DAILY.work.energy)} 起跳。點時段可以換活動。`;
+    return `💤 每晚睡覺體力 ${formatSigned(DAILY.sleep.energy)}${bonus >= 0.5 ? `（運動加成 +${bonus.toFixed(1)}）` : ''}；上班一天體力 ${formatSigned(DAILY.work.energy)} 起跳。點時段可以換活動。`;
   },
   forecast: ({ state }) => {
     const f = weeklyForecast(state);
@@ -76,7 +76,7 @@ export const binds = {
   },
   courseLine: ({ state }) => {
     const course = courseOf(state);
-    if (!course) return studySlots(state.schedule) ? '📚 沒有報名課程，行程裡的進修是自學，專業會慢慢提升。' : '';
+    if (!course) return studySlots(state.schedule) ? '📚 沒有報名課程，行程裡的進修是自己讀書，工作表現會多一點。' : '';
     const c = state.study.course;
     return `📚 上課中：${course.title}，出席 ${c.attended}/${requiredAttendance(course)}，${formatDate(c.endDay - 1, { weekday: false })} 結業`;
   },
@@ -160,9 +160,9 @@ function activityHint(state, id, weekend) {
   const parts = [];
   if (id === 'study') {
     const course = courseOf(state);
-    parts.push(course ? `上課出席 +${k}（${course.title}）` : `自學：專業 +${SKILLS.selfStudy * k}`);
+    parts.push(course ? `上課出席 +${k}（${course.title}）` : `自己讀書：表現 +${SKILLS.selfStudy * k}`);
   }
-  if (id === 'exercise') parts.push(`體能 +${FITNESS.perSlot * k}`);
+  if (id === 'exercise') parts.push(`體力上限 +${EXERCISE.maxPerSlot * k}`);
   if (fx.energy) parts.push(`體力 ${formatSigned(fx.energy)}`);
   if (fx.mood) parts.push(`心情 ${formatSigned(fx.mood)}`);
   if (id === 'overtime') parts.push('表現↑', `加班費 +${formatNumber(overtimePay(state, weekend))}`);

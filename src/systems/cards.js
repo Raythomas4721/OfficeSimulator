@@ -1,5 +1,5 @@
 // 等玩家回應的卡片：state.pending 是目前這張，其他排在 state.queue（DESIGN.md §14.3）
-// kind：'review'（檢討與月結）、'event'（事件）、'notice'（考核、年終、病倒等通知）、'away'（你不在的時候）
+// kind：'review'（每年 1/1 的「○○ 年的你」）、'event'（事件）、'notice'（病倒、課程結業等通知）、'away'（你不在的時候）
 import { NOTICES } from '../data/notices.js';
 import { EVENTS_BY_ID } from '../data/events.js';
 
@@ -19,10 +19,11 @@ export function closeCard(state) {
 }
 
 // 離線時不自動處理、停下來等玩家的卡片（§5.3）：
-// 重大抉擇（有選項的通知：升遷、出院；考試這種 minor 的除外），以及還沒選的劇情事件（有 on 的事件，§10.3）
+// 重大抉擇（還沒選的升遷、有選項的通知：出院），以及還沒選的劇情事件（有 on 的事件，§10.3）
 // 和標了 major 的事件（被約談）
 export function isMajor(card) {
-  if (card?.kind === 'notice') return !NOTICES[card.id]?.minor && Boolean(NOTICES[card.id]?.actions?.(card.data ?? {}));
+  if (card?.kind === 'review') return Boolean(card.annual?.offer) && !card.promotion; // 升遷抉擇
+  if (card?.kind === 'notice') return Boolean(NOTICES[card.id]?.actions?.(card.data ?? {}));
   if (card?.kind === 'event') return card.step === 'choose' && Boolean(EVENTS_BY_ID[card.id]?.on || EVENTS_BY_ID[card.id]?.major);
   return false;
 }

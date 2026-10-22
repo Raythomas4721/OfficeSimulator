@@ -14,7 +14,7 @@ import { autoResolve } from './systems/auto.js';
 import { runOffline } from './systems/offline.js';
 import { acceptPromotion, declinePromotion } from './systems/annual.js';
 import { presetSchedule } from './systems/schedule.js';
-import { dropCourse, enrollCourse, takeExam } from './systems/study.js';
+import { dropCourse, enrollCourse } from './systems/study.js';
 import { mountApp } from './ui/app.js';
 import { runStartFlow } from './ui/start.js';
 import { createTutorial } from './ui/tutorial.js';
@@ -67,7 +67,13 @@ const ctl = {
     save();
   },
 
-  // 年度回顧選一鍵行程；「照舊」不改行程
+  // 「○○ 年的你」卡片：先回答升遷，再選明年的一鍵行程（「照舊」不改行程）
+  decidePromotion(accept) {
+    if (game.state.pending?.kind !== 'review') return;
+    if (accept) acceptPromotion(game.state);
+    else declinePromotion(game.state);
+    save();
+  },
   resolveReviewPreset(id) {
     if (game.state.pending?.kind !== 'review') return;
     resolveReview(game.state, id === 'keep' ? null : presetSchedule(game.state, id));
@@ -82,12 +88,9 @@ const ctl = {
     closeCard(game.state);
     save();
   },
-  // 通知卡片上的選項：升遷抉擇、考前一晚、出院後繼續
+  // 通知卡片上的選項：出院後繼續（重新開始由畫面先確認）
   noticeAction(id) {
     if (game.state.pending?.kind !== 'notice') return;
-    if (id === 'acceptPromotion') acceptPromotion(game.state);
-    if (id === 'declinePromotion') declinePromotion(game.state);
-    if (id === 'examSleep' || id === 'examCram') takeExam(game.state, game.rng, id === 'examCram');
     closeCard(game.state);
     save();
   },

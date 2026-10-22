@@ -1,14 +1,20 @@
-// 年度回顧的卡片內容（DESIGN.md §5.4），外框由 cards.js 負責
+// 「○○ 年的你」卡片（DESIGN.md §5.4）：這一年的回顧＋考核年終＋升遷抉擇＋明年行程，外框由 cards.js 負責
 import { BOSS, BOSS_COMMENTS } from '../data/reviews.js';
+import { NOTICES } from '../data/notices.js';
+import { REVIEW } from '../data/balance.js';
+import { workEffects } from '../systems/work.js';
 import { schedulePresets } from './text.js';
 import { formatDate, formatMoney, formatSigned } from './format.js';
 
 export function reviewCard(p, state) {
   const r = p.report;
-  // 舊存檔裡可能還留著週檢討或月結的卡片
-  const title = p.type === 'yearly' ? `${p.year} 年度回顧` : p.type === 'weekly' ? `第 ${p.number} 週結束了` : `${p.month} 月結束了`;
+  const a = p.annual;
+  // 舊存檔裡可能還留著只有回顧、沒有考核的卡片
+  const title = a ? `${p.year} 年的你` : `${p.year ?? ''} 年度回顧`;
   const comment = BOSS_COMMENTS.find(c => c.when(r)).text;
-  const range = `${formatDate(r.startDay, { weekday: false })} ～ ${formatDate(r.endDay, { weekday: false })}`;
+  // 1/1 結算時才出卡，期間寫到前一天（12/31）
+  const range = `${formatDate(r.startDay, { weekday: false })} ～ ${formatDate(r.endDay - (a ? 1 : 0), { weekday: false })}`;
+  const deciding = a?.offer && !p.promotion;
   return `
         <h2 id="card-title">📋 ${title}</h2>
         <p class="muted">${range}</p>
@@ -26,19 +32,46 @@ export function reviewCard(p, state) {
           ${r.sickDays ? `<dt>病假</dt><dd>${r.sickDays} 天</dd>` : ''}
         </dl>
         <p class="speech"><b>${BOSS}：</b>「${comment}」</p>
-        <h3>明年的每週行程</h3>
-        ${presets(state)}`;
+        ${a ? appraisal(p) : ''}
+        ${deciding ? promotion(a.offer, state) : schedule(p, state)}`;
+}
+
+// 考核、加薪、年終
+function appraisal(p) {
+  const lines = NOTICES.review.lines(p.annual).filter(Boolean);
+  const salary = p.salary && p.salary.to !== p.salary.from ? `<li>月薪 ${formatMoney(p.salary.from)} → ${formatMoney(p.salary.to)}</li>` : '';
+  return `
+    <h3>年度考核</h3>
+    <div class="speech">${lines.map(l => `<p>${l}</p>`).join('')}</div>
+    <ul class="changes">${salary}<li>年終 +${formatMoney(p.bonus)}</li></ul>`;
+}
+
+// 有升遷時先選，選完才出現明年的行程
+function promotion(offer, state) {
+  const salary = Math.round((state.job.salary * (1 + REVIEW.promotionRaise)) / REVIEW.salaryRound) * REVIEW.salaryRound;
+  const now = workEffects(state).energy;
+  const next = workEffects(state, state.job.level + 1).energy;
+  return `
+    <div class="card-choices">
+      <button class="btn btn-block choice-btn btn-primary" data-action="reviewPromotion" data-value="accept">接受升遷<small>月薪 ${formatMoney(state.job.salary)} → ${formatMoney(salary)}，但平日上班體力 ${formatSigned(now)} → ${formatSigned(next)}</small></button>
+      <button class="btn btn-block choice-btn" data-action="reviewPromotion" data-value="decline">先不要<small>維持現職，心情 +${REVIEW.declineMood}；明年考核還能再升</small></button>
+    </div>`;
 }
 
 // 活動有 5 種，逐格調整改到「今天」分頁的時段選單做（§5.4）
-function presets(state) {
+function schedule(p, state) {
+  const decided = p.promotion === 'accepted' ? `<p class="note">🎉 你升上「${p.annual.offer.title}」了！</p>`
+    : p.promotion === 'declined' ? '<p class="muted">你婉拒了升遷，明年再說。</p>' : '';
   return `
+    ${decided}
+    <h3>明年的每週行程</h3>
     <div class="preset-grid">
-      ${schedulePresets(state).map(p => `<button class="btn${p.id === 'keep' ? ' btn-primary' : ''}" data-action="reviewPreset" data-value="${p.id}">${p.label}</button>`).join('')}
+      ${schedulePresets(state).map(s => `<button class="btn${s.id === 'keep' ? ' btn-primary' : ''}" data-action="reviewPreset" data-value="${s.id}">${s.label}</button>`).join('')}
     </div>
     <p class="muted">想一天一天調整，關掉後在「今天」分頁點時段就能改。</p>`;
 }
 
 export const actions = {
+  reviewPromotion: ({ value }, ctl) => ctl.decidePromotion(value === 'accept'),
   reviewPreset: ({ value }, ctl) => ctl.resolveReviewPreset(value),
 };

@@ -43,11 +43,9 @@ const LOG_TEXT = {
   courseDrop: e => `退掉了${courseTitle(e)}。`,
   pip: e => ({ passed: '績效改善計畫通過了。', demoted: '😣 績效改善計畫沒過，被降級減薪。', cut: '😣 績效改善計畫沒過，被減薪。' })[e.result],
   debtCleared: () => '💰 終於還清負債了！',
-  examPass: e => `🏅 考過${courseTitle(e)}，拿到證照！`,
-  examFail: e => `${courseTitle(e)}沒有考過。`,
 };
 
-const STAT_LABELS = { money: '存款', energy: '體力', mood: '心情', performance: '工作表現', fitness: '體能', ...SKILL_LABELS };
+const STAT_LABELS = { money: '存款', energy: '體力', mood: '心情', performance: '工作表現', energyMax: '體力上限', ...SKILL_LABELS };
 
 // 數值變化的條列文字，例如「心情 −3」「存款 −NT$ 60」
 export function deltaItems(deltas = {}) {

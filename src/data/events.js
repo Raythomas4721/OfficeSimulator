@@ -8,7 +8,7 @@ import { LIFE_EVENTS } from './events-life.js';
 // 欄位：on（劇情事件的日子，見 events-first-year.js）、cast（固定班底，見 cast.js）
 // 選項欄位：effects、chance { p, effects, then, result, otherwise, otherwiseResult }、
 //           delayed { days, effects }、forceSlots { activity, weeks, slots }、sickLeave、result、default
-// effects 可用：money、energy、mood、performance、技能（professional 等）、fitness；
+// effects 可用：money、energy、mood、performance、技能（management、language、programming）、energyMax（體力上限）；
 //   illness: 'collapse' 直接病倒、'hospital' 直接住院；effects 和 chance.p 也可以是 s => … 的函式
 // hint：選項按鈕下方的說明（s => 文字），例如看技能的成功機率
 // crisis：選了之後寫進 state.crisis（被約談、債務協商）；事件的 major: true 代表重大抉擇，離線時停下來

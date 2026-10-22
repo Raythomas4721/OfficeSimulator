@@ -1,4 +1,4 @@
-import { DAILY, FITNESS } from '../data/balance.js';
+import { DAILY, EXERCISE } from '../data/balance.js';
 import { STUDY_PRESETS, SCHEDULE_PRESETS } from '../data/schedule.js';
 import { COURSES_BY_ID } from '../data/courses.js';
 import { slotIndex } from '../core/calendar.js';
@@ -22,7 +22,7 @@ export function applySlot(state, activity, weekend, multiplier) {
   state.job.performance += fx.performance * multiplier;
   if (activity === 'study') attendStudy(state, k);
   if (activity === 'exercise') {
-    state.fitness = Math.min(FITNESS.max, state.fitness + FITNESS.perSlot * k);
+    state.vitals.energyMax = Math.min(EXERCISE.capMax, state.vitals.energyMax + EXERCISE.maxPerSlot * k);
     state.money -= fx.cost;
     state.period.expenses += fx.cost;
   }
@@ -36,8 +36,8 @@ export function applySlot(state, activity, weekend, multiplier) {
   }
 }
 
-// 體能越好，睡覺恢復越多（§6）
-export const sleepEffects = state => ({ ...DAILY.sleep, energy: DAILY.sleep.energy + state.fitness * FITNESS.sleepPerPoint });
+// 體力上限越高，睡覺恢復越多（§6）
+export const sleepEffects = state => ({ ...DAILY.sleep, energy: DAILY.sleep.energy + (state.vitals.energyMax - EXERCISE.baseMax) * EXERCISE.sleepPerPoint });
 
 export function applySleep(state) {
   const fx = sleepEffects(state);
@@ -45,17 +45,16 @@ export function applySleep(state) {
   state.vitals.mood += fx.mood;
 }
 
-// 每天結算：體能自然下降，體力上限跟著體能變
-export function applyFitnessDay(state) {
-  state.fitness = Math.max(0, state.fitness - FITNESS.dailyDecay);
-  state.vitals.energyMax = Math.round(100 + state.fitness * FITNESS.energyMaxPerPoint);
+// 每天結算：不運動的話，體力上限慢慢回落
+export function applyHealthDay(state) {
+  state.vitals.energyMax = Math.max(EXERCISE.baseMax, state.vitals.energyMax - EXERCISE.dailyDecay);
 }
 
 // 一個時段的效果；週末是一整天，效果和花費加倍
 export function slotEffects(activity, weekend) {
   const fx = DAILY[activity];
   const k = weekend ? DAILY.weekendMultiplier : 1;
-  const cost = activity === 'exercise' ? FITNESS.exerciseCost : 0;
+  const cost = activity === 'exercise' ? EXERCISE.cost : 0;
   return { energy: fx.energy * k, mood: fx.mood * k, performance: fx.performance * k, cost: cost * k };
 }
 

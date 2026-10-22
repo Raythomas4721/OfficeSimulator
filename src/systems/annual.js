@@ -8,6 +8,7 @@ import { applyEffects } from './effects.js';
 import { triggerEvent } from './events.js';
 import { gradeFor } from './work.js';
 import { addSkill } from './study.js';
+import { buildReport } from './review.js';
 
 const GRADE_ORDER = ['A', 'B', 'C', 'D'];
 const atLeast = (grade, required) => GRADE_ORDER.indexOf(grade) <= GRADE_ORDER.indexOf(required);
@@ -18,9 +19,10 @@ const lastGrades = (state, n, grade) => {
 };
 const lastGradesA = (state, n) => lastGrades(state, n, 'A');
 
-// 1/1 結算時呼叫，評的是剛結束的那一年
+// 1/1 結算時呼叫，評的是剛結束的那一年；回顧、考核、年終、升遷抉擇、明年行程都在同一張卡（§5.4）
 export function annualReview(state, rng) {
   const year = calendarOf(state.day).year - 1;
+  const report = buildReport(state); // 先記下這一年，年終另外列
   const trial = monthsBetween(state.job.startDay, state.day) < REVIEW.trialMonths;
   const grade = trial ? REVIEW.trialGrade : gradeFor(state.job.performance);
   const [lo, hi] = REVIEW.raise[grade];
@@ -56,12 +58,16 @@ export function annualReview(state, rng) {
 
   addLog(state, { kind: 'review', year, grade });
   addLog(state, { kind: 'bonus', amount: bonus });
+  state.flags.reviews += 1;
   pushCard(state, {
-    kind: 'notice',
-    id: 'review',
-    data: { year, grade, trial, raise, offer, missing, pip, bonusMonths: months, prorated: ratio < 1 },
+    kind: 'review',
+    type: 'yearly',
+    year,
+    report,
+    annual: { year, grade, trial, raise, offer, missing, pip, bonusMonths: months, prorated: ratio < 1 },
     salary: { from: before, to: state.job.salary },
-    deltas: { money: bonus },
+    bonus,
+    promotion: null, // 'accepted' | 'declined'
   });
   if (grade === 'C') triggerEvent(state, 'year_end_bonus');
   if (!pip && lastGrades(state, 2, 'D')) triggerEvent(state, 'pip_talk'); // 連兩年 D 被約談
@@ -77,10 +83,12 @@ function demote(state) {
   return 'demoted';
 }
 
-// 考核卡片上的升遷抉擇：接受就升一級、月薪再調升，之後平日上班更累
+// 「○○ 年的你」卡片上的升遷抉擇：接受就升一級、月薪再調升，之後平日上班更累
 export function acceptPromotion(state) {
-  const offer = state.pending?.data?.offer;
-  if (!offer || offer.level !== state.job.level + 1) return;
+  const card = state.pending;
+  const offer = card?.annual?.offer;
+  if (!offer || card.promotion || offer.level !== state.job.level + 1) return;
+  card.promotion = 'accepted';
   state.job.level = offer.level;
   state.job.levelStartDay = state.day;
   state.job.salary = roundTo(state.job.salary * (1 + REVIEW.promotionRaise), REVIEW.salaryRound);
@@ -89,8 +97,10 @@ export function acceptPromotion(state) {
 
 // 婉拒：維持現職、心情回升；年資照算，明年考核還能再升
 export function declinePromotion(state) {
-  const offer = state.pending?.data?.offer;
-  if (!offer) return;
+  const card = state.pending;
+  const offer = card?.annual?.offer;
+  if (!offer || card.promotion) return;
+  card.promotion = 'declined';
   applyEffects(state, { mood: REVIEW.declineMood });
   addLog(state, { kind: 'declinePromotion', title: offer.title });
 }

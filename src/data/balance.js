@@ -27,45 +27,30 @@ export const DAILY = {
   slack: { energy: 0, mood: 8, performance: 0 }, // 耍廢：只補心情
   study: { energy: -6, mood: -3, performance: 0 },
   exercise: { energy: -4, mood: 2, performance: 0 },
-  weekendMultiplier: 2, // 週末一整天：效果、花費、出席、體能都加倍
+  weekendMultiplier: 2, // 週末一整天：效果、花費、出席、體力上限都加倍
 };
 
-// 技能（DESIGN.md §6）：每項 0～100
+// 技能（DESIGN.md §6）：管理、外語、程式，每項 0～100
 export const SKILLS = {
   max: 100,
-  workProfessional: 0.02, // 每個上班日，專業 +0.02（一年約 +5）
-  selfStudy: 0.1, // 沒報名課程時，一格進修自學的專業（每週 2 格一年約 +10）
-  professionalPerformance: 1 / 1000, // 工作表現累積 ×（1 + 專業 × 這個值），專業 100 時多 10%
+  selfStudy: 0.05, // 沒報名課程時，一格進修是自己讀書：工作表現 +0.05（約加班的一半）
   managerFromLevel: 3, // 升上這個職級（主任）後，每年 1/1 管理再加
   managerYearly: 3,
 };
 
-// 體能（§6）：靠運動累積，每天自然下降
-export const FITNESS = {
-  max: 100,
-  perSlot: 1,
-  dailyDecay: 0.15,
-  energyMaxPerPoint: 0.3, // 體力上限 = 100 + 體能 × 0.3
-  sleepPerPoint: 0.03, // 每晚睡覺多恢復 體能 × 0.03（體能 100 時 +3）
-  exerciseCost: 200, // 一格運動的花費（健身房、球場）
+// 健康（§6）：運動提高體力上限，不運動慢慢回落；v0.2 的「體能」在 M8 併進來
+export const EXERCISE = {
+  baseMax: 100, // 體力上限最低
+  capMax: 130, // 體力上限最高
+  maxPerSlot: 0.3, // 運動一格，體力上限 +0.3（週末加倍）
+  dailyDecay: 0.045, // 每天回落，約一週 −0.3，所以每週 1 格只能維持
+  sleepPerPoint: 0.1, // 每晚睡覺多恢復（上限 − 100）× 0.1，上限 130 時 +3
+  cost: 200, // 一格運動的花費（健身房、球場）
 };
 
 // 進修（§9.1）
 export const STUDY = {
   passRate: 0.7, // 出席率達到這個比例才算結業
-};
-
-// 考試（§9.1）：通過率 = 基礎 + 技能 + 出席 + 考前狀態，限制在 5%～95%
-export const EXAM = {
-  base: 0.3,
-  perSkillPoint: 0.006, // 相關技能每 10 點 +6%
-  attendanceBonus: 0.2, // 出席率達 70%
-  goodState: 0.1, // 考前體力、心情都 ≥ 50
-  badState: -0.2, // 考前體力或心情 < 20
-  cramBonus: 0.1, // 考前熬夜衝刺
-  cramEnergy: -15,
-  min: 0.05,
-  max: 0.95,
 };
 
 export const THRESHOLDS = {
